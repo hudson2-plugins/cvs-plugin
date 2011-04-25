@@ -147,7 +147,7 @@ public class CVSSCM extends SCM implements Serializable {
     @DataBoundConstructor
     public CVSSCM(String cvsRoot, String allModules, String branch, String cvsRsh, boolean canUseUpdate, boolean legacy,
                   boolean isTag, String excludedRegions) {
-        if(fixNull(branch).equals("HEAD")) {
+        if (fixNull(branch).equals("HEAD")) {
             branch = null;
         }
 
@@ -167,7 +167,7 @@ public class CVSSCM extends SCM implements Serializable {
     }
 
     private String compression() {
-        if(getDescriptor().isNoCompression()) {
+        if (getDescriptor().isNoCompression()) {
             return null;
         }
 
@@ -202,7 +202,7 @@ public class CVSSCM extends SCM implements Serializable {
      * @param workspace
      */
     public FilePath getModuleRoot(FilePath workspace) {
-        if(flatten) {
+        if (flatten) {
             return workspace;
         }
 
@@ -211,10 +211,10 @@ public class CVSSCM extends SCM implements Serializable {
 
     @Override
     public FilePath[] getModuleRoots(FilePath workspace) {
-        if(!flatten) {
+        if (!flatten) {
             final String[] moduleLocations = getAllModulesNormalized();
             FilePath[] moduleRoots = new FilePath[moduleLocations.length];
-            for(int i = 0; i < moduleLocations.length; i++) {
+            for (int i = 0; i < moduleLocations.length; i++) {
                 moduleRoots[i] = workspace.child(moduleLocations[i]);
             }
             return moduleRoots;
@@ -242,11 +242,11 @@ public class CVSSCM extends SCM implements Serializable {
 
     private Pattern[] getExcludedRegionsPatterns() {
         String[] excludedRegions = getExcludedRegionsNormalized();
-        if(excludedRegions != null) {
+        if (excludedRegions != null) {
             Pattern[] patterns = new Pattern[excludedRegions.length];
 
             int i = 0;
-            for(String excludedRegion : excludedRegions) {
+            for (String excludedRegion : excludedRegions) {
                 patterns[i++] = Pattern.compile(excludedRegion);
             }
 
@@ -263,7 +263,7 @@ public class CVSSCM extends SCM implements Serializable {
         // split by whitespace, except "\ "
         String[] r = module.split("(?<!\\\\)[ \\r\\n]+");
         // now replace "\ " to " ".
-        for(int i = 0; i < r.length; i++) {
+        for (int i = 0; i < r.length; i++) {
             r[i] = r[i].replaceAll("\\\\ ", " ");
         }
         return r;
@@ -299,30 +299,30 @@ public class CVSSCM extends SCM implements Serializable {
     public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener)
         throws IOException, InterruptedException {
         String why = isUpdatable(dir);
-        if(why != null) {
+        if (why != null) {
             listener.getLogger().println(Messages.CVSSCM_WorkspaceInconsistent(why));
             return true;
         }
 
         List<String> changedFiles = update(true, launcher, dir, listener, new Date());
 
-        if(changedFiles != null && !changedFiles.isEmpty()) {
+        if (changedFiles != null && !changedFiles.isEmpty()) {
             Pattern[] patterns = getExcludedRegionsPatterns();
 
-            if(patterns != null) {
+            if (patterns != null) {
                 boolean areThereChanges = false;
 
-                for(String changedFile : changedFiles) {
+                for (String changedFile : changedFiles) {
                     boolean patternMatched = false;
 
-                    for(Pattern pattern : patterns) {
-                        if(pattern.matcher(changedFile).matches()) {
+                    for (Pattern pattern : patterns) {
+                        if (pattern.matcher(changedFile).matches()) {
                             patternMatched = true;
                             break;
                         }
                     }
 
-                    if(!patternMatched) {
+                    if (!patternMatched) {
                         areThereChanges = true;
                         break;
                     }
@@ -340,7 +340,7 @@ public class CVSSCM extends SCM implements Serializable {
     }
 
     private void configureDate(ArgumentListBuilder cmd, Date date) { // #192
-        if(isTag) {
+        if (isTag) {
             return; // don't use the -D option.
         }
         DateFormat df = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, Locale.US);
@@ -352,13 +352,13 @@ public class CVSSCM extends SCM implements Serializable {
                             File changelogFile) throws IOException, InterruptedException {
         List<String> changedFiles = null; // files that were affected by update. null this is a check out
 
-        if(canUseUpdate && isUpdatable(ws) == null) {
+        if (canUseUpdate && isUpdatable(ws) == null) {
             changedFiles = update(false, launcher, ws, listener, build.getTimestamp().getTime());
-            if(changedFiles == null) {
+            if (changedFiles == null) {
                 return false;   // failed
             }
         } else {
-            if(!checkout(launcher, ws, listener, build.getTimestamp().getTime())) {
+            if (!checkout(launcher, ws, listener, build.getTimestamp().getTime())) {
                 return false;
             }
         }
@@ -372,25 +372,25 @@ public class CVSSCM extends SCM implements Serializable {
                 ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(os));
 
                 String[] modules = getAllModulesNormalized();
-                if(flatten) {
+                if (flatten) {
                     assert modules.length == 1; // becaue flatter==true only when there's one module.
                     archive(ws, modules[0], zos, true);
                 } else {
-                    for(String m : modules) {
+                    for (String m : modules) {
                         File mf = new File(ws, m);
 
-                        if(!mf.exists())
+                        if (!mf.exists())
                         // directory doesn't exist. This happens if a directory that was checked out
                         // didn't include any file.
                         {
                             continue;
                         }
 
-                        if(!mf.isDirectory()) {
+                        if (!mf.isDirectory()) {
                             // this module is just a file, say "foo/bar.txt".
                             // to record "foo/CVS/*", we need to start by archiving "foo".
                             int idx = m.lastIndexOf('/');
-                            if(idx == -1) {
+                            if (idx == -1) {
                                 throw new Error("Kohsuke probe: m=" + m);
                             }
                             m = m.substring(0, idx);
@@ -413,7 +413,7 @@ public class CVSSCM extends SCM implements Serializable {
     public boolean checkout(Launcher launcher, FilePath dir, TaskListener listener)
         throws IOException, InterruptedException {
         Date now = new Date();
-        if(canUseUpdate && isUpdatable(dir) == null) {
+        if (canUseUpdate && isUpdatable(dir) == null) {
             return update(false, launcher, dir, listener, now) != null;
         } else {
             return checkout(launcher, dir, listener, now);
@@ -427,24 +427,24 @@ public class CVSSCM extends SCM implements Serializable {
         ArgumentListBuilder cmd = new ArgumentListBuilder();
         cmd.add(getDescriptor().getCvsExeOrDefault(), noQuiet ? null : (debug ? "-t" : "-Q"), compression(), "-d",
             cvsroot, "co", "-P");
-        if(branch != null) {
+        if (branch != null) {
             cmd.add("-r", branch);
         }
-        if(flatten) {
+        if (flatten) {
             cmd.add("-d", dir.getName());
         }
         configureDate(cmd, dt);
         cmd.add(getAllModulesNormalized());
 
-        if(!run(launcher, cmd, listener, flatten ? dir.getParent() : dir)) {
+        if (!run(launcher, cmd, listener, flatten ? dir.getParent() : dir)) {
             return false;
         }
 
         // clean up the sticky tag
-        if(flatten) {
+        if (flatten) {
             dir.act(new StickyDateCleanUpTask());
         } else {
-            for(String module : getAllModulesNormalized()) {
+            for (String module : getAllModulesNormalized()) {
                 dir.child(module).act(new StickyDateCleanUpTask());
             }
         }
@@ -473,8 +473,8 @@ public class CVSSCM extends SCM implements Serializable {
         knownFiles.add("CVS");
 
         File[] files = dir.listFiles();
-        if(files == null) {
-            if(isRoot) {
+        if (files == null) {
+            if (isRoot) {
                 throw new IOException(
                     "No such directory exists. Did you specify the correct branch? Perhaps you specified a tag: "
                         + dir);
@@ -483,17 +483,17 @@ public class CVSSCM extends SCM implements Serializable {
                     "No such directory exists. Looks like someone is modifying the workspace concurrently: " + dir);
             }
         }
-        for(File f : files) {
+        for (File f : files) {
             String name = relPath + '/' + f.getName();
-            if(f.isDirectory()) {
-                if(hasCVSdirs && !knownFiles.contains(f.getName())) {
+            if (f.isDirectory()) {
+                if (hasCVSdirs && !knownFiles.contains(f.getName())) {
                     // not controlled in CVS. Skip.
                     // but also make sure that we archive CVS/*, which doesn't have CVS/CVS
                     continue;
                 }
                 archive(f, name, zos, false);
             } else {
-                if(!dir.getName().equals("CVS"))
+                if (!dir.getName().equals("CVS"))
                 // we only need to archive CVS control files, not the actual workspace files
                 {
                     continue;
@@ -511,16 +511,16 @@ public class CVSSCM extends SCM implements Serializable {
      * Parses the CVS/Entries file and adds file/directory names to the list.
      */
     private void parseCVSEntries(File entries, Set<String> knownFiles) throws IOException {
-        if(!entries.exists()) {
+        if (!entries.exists()) {
             return;
         }
 
         BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(entries)));
         try {
             String line;
-            while((line = in.readLine()) != null) {
+            while ((line = in.readLine()) != null) {
                 String[] tokens = line.split("/+");
-                if(tokens == null || tokens.length < 2) {
+                if (tokens == null || tokens.length < 2) {
                     continue;   // invalid format
                 }
                 knownFiles.add(tokens[1]);
@@ -543,19 +543,19 @@ public class CVSSCM extends SCM implements Serializable {
 
         ArgumentListBuilder cmd = new ArgumentListBuilder();
         cmd.add(getDescriptor().getCvsExeOrDefault(), debug ? "-t" : "-q", compression());
-        if(dryRun) {
+        if (dryRun) {
             cmd.add("-n");
         }
         cmd.add("update", "-PdC");
-        if(branch != null) {
+        if (branch != null) {
             cmd.add("-r", branch);
         }
         configureDate(cmd, date);
 
-        if(flatten) {
+        if (flatten) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            if(!run(launcher, cmd, listener, workspace,
+            if (!run(launcher, cmd, listener, workspace,
                 new ForkOutputStream(baos, listener.getLogger()))) {
                 return null;
             }
@@ -572,13 +572,13 @@ public class CVSSCM extends SCM implements Serializable {
             moduleNames.addAll(workspace.act(new FileCallable<Set<String>>() {
                 public Set<String> invoke(File ws, VirtualChannel channel) throws IOException {
                     File[] subdirs = ws.listFiles();
-                    if(subdirs != null) {
+                    if (subdirs != null) {
                         SUBDIR:
-                        for(File s : subdirs) {
-                            if(new File(s, "CVS").isDirectory()) {
+                        for (File s : subdirs) {
+                            if (new File(s, "CVS").isDirectory()) {
                                 String top = s.getName();
-                                for(String mod : moduleNames) {
-                                    if(mod.startsWith(top + "/")) {
+                                for (String mod : moduleNames) {
+                                    if (mod.startsWith(top + "/")) {
                                         // #190: user asked to check out foo/bar foo/baz quux
                                         // Our top-level dirs are "foo" and "quux".
                                         // Do not add "foo" to checkout or we will check out foo/*!
@@ -593,7 +593,7 @@ public class CVSSCM extends SCM implements Serializable {
                 }
             }));
 
-            for(String moduleName : moduleNames) {
+            for (String moduleName : moduleNames) {
                 // capture the output during update
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 FilePath modulePath = new FilePath(workspace, moduleName);
@@ -601,19 +601,19 @@ public class CVSSCM extends SCM implements Serializable {
                 ArgumentListBuilder actualCmd = cmd;
                 String baseName = moduleName;
 
-                if(!modulePath.isDirectory()) {
+                if (!modulePath.isDirectory()) {
                     // updating just one file, like "foo/bar.txt".
                     // run update command from "foo" directory with "bar.txt" as the command line argument
                     actualCmd = cmd.clone();
                     actualCmd.add(modulePath.getName());
                     modulePath = modulePath.getParent();
                     int slash = baseName.lastIndexOf('/');
-                    if(slash > 0) {
+                    if (slash > 0) {
                         baseName = baseName.substring(0, slash);
                     }
                 }
 
-                if(!run(launcher, actualCmd, listener,
+                if (!run(launcher, actualCmd, listener,
                     modulePath,
                     new ForkOutputStream(baos, listener.getLogger()))) {
                     return null;
@@ -636,7 +636,7 @@ public class CVSSCM extends SCM implements Serializable {
     private void join(Future<Void> task) throws InterruptedException, IOException {
         try {
             task.get();
-        } catch(ExecutionException e) {
+        } catch (ExecutionException e) {
             throw new IOException2(e);
         }
     }
@@ -661,15 +661,15 @@ public class CVSSCM extends SCM implements Serializable {
         BufferedReader in = new BufferedReader(new InputStreamReader(
             new ByteArrayInputStream(output.toByteArray())));
         String line;
-        while((line = in.readLine()) != null) {
+        while ((line = in.readLine()) != null) {
             Matcher matcher = UPDATE_LINE.matcher(line);
-            if(matcher.matches()) {
+            if (matcher.matches()) {
                 result.add(baseName + matcher.group(1));
                 continue;
             }
 
             matcher = REMOVAL_LINE.matcher(line);
-            if(matcher.matches()) {
+            if (matcher.matches()) {
                 result.add(baseName + matcher.group(2));
                 continue;
             }
@@ -692,13 +692,13 @@ public class CVSSCM extends SCM implements Serializable {
     private String isUpdatable(FilePath dir) throws IOException, InterruptedException {
         return dir.act(new FileCallable<String>() {
             public String invoke(File dir, VirtualChannel channel) throws IOException {
-                if(flatten) {
+                if (flatten) {
                     return isUpdatableModule(dir);
                 } else {
-                    for(String m : getAllModulesNormalized()) {
+                    for (String m : getAllModulesNormalized()) {
                         File module = new File(dir, m);
                         String reason = isUpdatableModule(module);
-                        if(reason != null) {
+                        if (reason != null) {
                             return reason;
                         }
                     }
@@ -708,34 +708,34 @@ public class CVSSCM extends SCM implements Serializable {
 
             private String isUpdatableModule(File module) {
                 try {
-                    if(!module.isDirectory())
+                    if (!module.isDirectory())
                     // module is a file, like "foo/bar.txt". Then CVS information is "foo/CVS".
                     {
                         module = module.getParentFile();
                     }
 
                     File cvs = new File(module, "CVS");
-                    if(!cvs.exists()) {
+                    if (!cvs.exists()) {
                         return "No CVS dir in " + module;
                     }
 
                     // check cvsroot
                     File cvsRootFile = new File(cvs, "Root");
-                    if(!checkContents(cvsRootFile, cvsroot)) {
+                    if (!checkContents(cvsRootFile, cvsroot)) {
                         return cvs + "/Root content mismatch: expected " + cvsroot + " but found "
                             + FileUtils.readFileToString(cvsRootFile);
                     }
-                    if(branch != null) {
-                        if(!checkContents(new File(cvs, "Tag"), (isTag() ? 'N' : 'T') + branch)) {
+                    if (branch != null) {
+                        if (!checkContents(new File(cvs, "Tag"), (isTag() ? 'N' : 'T') + branch)) {
                             return cvs + " branch mismatch";
                         }
                     } else {
                         File tag = new File(cvs, "Tag");
-                        if(tag.exists()) {
+                        if (tag.exists()) {
                             BufferedReader r = new BufferedReader(new FileReader(tag));
                             try {
                                 String s = r.readLine();
-                                if(s != null && s.startsWith("D")) {
+                                if (s != null && s.startsWith("D")) {
                                     return null;    // OK
                                 }
                                 return "Workspace is on branch " + s;
@@ -746,7 +746,7 @@ public class CVSSCM extends SCM implements Serializable {
                     }
 
                     return null;
-                } catch(IOException e) {
+                } catch (IOException e) {
                     return e.getMessage();
                 }
             }
@@ -763,14 +763,14 @@ public class CVSSCM extends SCM implements Serializable {
             BufferedReader r = new BufferedReader(new FileReader(file));
             try {
                 String s = r.readLine();
-                if(s == null) {
+                if (s == null) {
                     return false;
                 }
                 return massageForCheckContents(s).equals(massageForCheckContents(contents));
             } finally {
                 r.close();
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             return false;
         }
     }
@@ -783,7 +783,7 @@ public class CVSSCM extends SCM implements Serializable {
         // this is somewhat ugly because we only want to do this for CVS/Root but still ended up doing this
         // for all checks. OTOH, there shouldn'be really any false positive.
         Matcher m = PSERVER_CVSROOT_WITH_PASSWORD.matcher(s);
-        if(m.matches()) {
+        if (m.matches()) {
             s = m.group(1) + m.group(2);  // cut off password
         }
         return s;
@@ -814,7 +814,7 @@ public class CVSSCM extends SCM implements Serializable {
 
         public ChangeLogResult(boolean hadError, String errorOutput) {
             this.hadError = hadError;
-            if(hadError) {
+            if (hadError) {
                 this.errorOutput = errorOutput;
             }
         }
@@ -856,13 +856,13 @@ public class CVSSCM extends SCM implements Serializable {
      */
     private boolean calcChangeLog(AbstractBuild build, FilePath ws, final List<String> changedFiles, File changelogFile,
                                   final BuildListener listener) throws InterruptedException {
-        if(build.getPreviousBuild() == null || (changedFiles != null && changedFiles.isEmpty())) {
+        if (build.getPreviousBuild() == null || (changedFiles != null && changedFiles.isEmpty())) {
             // nothing to compare against, or no changes
             // (note that changedFiles==null means fallback, so we have to run cvs log.
             listener.getLogger().println("$ no changes detected");
             return createEmptyChangeLog(changelogFile, listener, "changelog");
         }
-        if(skipChangeLog) {
+        if (skipChangeLog) {
             listener.getLogger().println("Skipping changelog computation");
             return createEmptyChangeLog(changelogFile, listener, "changelog");
         }
@@ -887,19 +887,19 @@ public class CVSSCM extends SCM implements Serializable {
                     ChangeLogTask task = new ChangeLogTask() {
                         @Override
                         public void log(String msg, int msgLevel) {
-                            if(msgLevel == org.apache.tools.ant.Project.MSG_ERR) {
+                            if (msgLevel == org.apache.tools.ant.Project.MSG_ERR) {
                                 hadError[0] = true;
                             }
                             // send error to listener. This seems like the route in which the changelog task
                             // sends output.
                             // Also in ChangeLogTask.getExecuteStreamHandler, we send stderr from CVS
                             // at WARN level.
-                            if(msgLevel <= org.apache.tools.ant.Project.MSG_WARN) {
+                            if (msgLevel <= org.apache.tools.ant.Project.MSG_WARN) {
                                 errorOutput.write(msg);
                                 errorOutput.write('\n');
                                 return;
                             }
-                            if(debug) {
+                            if (debug) {
                                 listener.getLogger().println(msg);
                             }
                         }
@@ -907,14 +907,14 @@ public class CVSSCM extends SCM implements Serializable {
                     task.setProject(new org.apache.tools.ant.Project());
                     task.setCvsExe(cvsExe);
                     task.setDir(ws);
-                    if(cvspassFile.length() != 0) {
+                    if (cvspassFile.length() != 0) {
                         task.setPassfile(new File(cvspassFile));
                     }
-                    if(canUseUpdate && cvsroot.startsWith("/")) {
+                    if (canUseUpdate && cvsroot.startsWith("/")) {
                         // cvs log of built source trees unreliable in local access method:
                         // https://savannah.nongnu.org/bugs/index.php?15223
                         task.setCvsRoot(":fork:" + cvsroot);
-                    } else if(canUseUpdate && cvsroot.startsWith(":local:")) {
+                    } else if (canUseUpdate && cvsroot.startsWith(":local:")) {
                         task.setCvsRoot(":fork:" + cvsroot.substring(7));
                     } else {
                         task.setCvsRoot(cvsroot);
@@ -924,38 +924,38 @@ public class CVSSCM extends SCM implements Serializable {
                     BufferedOutputStream bufferedOutput = new BufferedOutputStream(out);
                     task.setDeststream(bufferedOutput);
                     // It's to enforce ChangeLogParser find a "branch". If tag was specified, branch does not matter (see documentation for 'cvs log -r:tag').
-                    if(!isTag()) {
+                    if (!isTag()) {
                         task.setBranch(branch);
                     }
                     // It's to enforce ChangeLogTask use "baranch" in CVS command (cvs log -r...).
                     task.setTag(isTag() ? ":" + branch : branch);
                     task.setStart(startTime);
                     task.setEnd(endTime);
-                    if(changedFiles != null) {
+                    if (changedFiles != null) {
                         // we can optimize the processing if we know what files have changed.
                         // but also try not to make the command line too long so as no to hit
                         // the system call limit to the command line length (see issue #389)
                         // the choice of the number is arbitrary, but normally we don't really
                         // expect continuous builds to have too many changes, so this should be OK.
-                        if(changedFiles.size() < 100 || !Hudson.isWindows()) {
+                        if (changedFiles.size() < 100 || !Hudson.isWindows()) {
                             // if the directory doesn't exist, cvs changelog will die, so filter them out.
                             // this means we'll lose the log of those changes
-                            for(String filePath : changedFiles) {
-                                if(new File(ws, filePath).getParentFile().exists()) {
+                            for (String filePath : changedFiles) {
+                                if (new File(ws, filePath).getParentFile().exists()) {
                                     task.addFile(filePath);
                                 }
                             }
                         }
                     } else {
                         // fallback
-                        if(!flatten) {
+                        if (!flatten) {
                             task.setPackage(getAllModulesNormalized());
                         }
                     }
 
                     try {
                         task.execute();
-                    } catch(BuildException e) {
+                    } catch (BuildException e) {
                         throw new BuildExceptionWithLog(e, errorOutput.toString());
                     } finally {
                         bufferedOutput.close();
@@ -965,12 +965,12 @@ public class CVSSCM extends SCM implements Serializable {
                 }
             });
 
-            if(result.hadError) {
+            if (result.hadError) {
                 // non-fatal error must have occurred, such as cvs changelog parsing error.s
                 listener.getLogger().print(result.errorOutput);
             }
             return true;
-        } catch(BuildExceptionWithLog e) {
+        } catch (BuildExceptionWithLog e) {
             // capture output from the task for diagnosis
             listener.getLogger().print(e.errorOutput);
             // then report an error
@@ -979,12 +979,12 @@ public class CVSSCM extends SCM implements Serializable {
             w.println("Working directory is " + ws);
             x.printStackTrace(w);
             return false;
-        } catch(RuntimeException e) {
+        } catch (RuntimeException e) {
             // an user reported a NPE inside the changeLog task.
             // we don't want a bug in Ant to prevent a build.
             e.printStackTrace(listener.error(e.getMessage()));
             return true;    // so record the message but continue
-        } catch(IOException e) {
+        } catch (IOException e) {
             e.printStackTrace(listener.error("Failed to detect changlog"));
             return true;
         } finally {
@@ -999,14 +999,14 @@ public class CVSSCM extends SCM implements Serializable {
 
     @Override
     public void buildEnvVars(AbstractBuild<?, ?> build, Map<String, String> env) {
-        if(cvsRsh != null) {
+        if (cvsRsh != null) {
             env.put("CVS_RSH", cvsRsh);
         }
-        if(branch != null) {
+        if (branch != null) {
             env.put("CVS_BRANCH", branch);
         }
         String cvspass = getDescriptor().getCvspassFile();
-        if(cvspass.length() != 0) {
+        if (cvspass.length() != 0) {
             env.put("CVS_PASSFILE", cvspass);
         }
     }
@@ -1022,7 +1022,7 @@ public class CVSSCM extends SCM implements Serializable {
         Map<String, String> env = createEnvVarMap(true);
 
         int r = launcher.launch().cmds(cmd).envs(env).stdout(out).pwd(dir).join();
-        if(r != 0) {
+        if (r != 0) {
             listener.fatalError(getDescriptor().getDisplayName() + " failed. exit code=" + r);
         }
 
@@ -1042,7 +1042,7 @@ public class CVSSCM extends SCM implements Serializable {
      */
     protected final Map<String, String> createEnvVarMap(boolean overrideOnly) {
         Map<String, String> env = new HashMap<String, String>();
-        if(!overrideOnly) {
+        if (!overrideOnly) {
             env.putAll(EnvVars.masterEnvVars);
         }
         buildEnvVars(null/*TODO*/, env);
@@ -1067,7 +1067,7 @@ public class CVSSCM extends SCM implements Serializable {
 
         private void process(File f) throws IOException {
             File entries = new File(f, "CVS/Entries");
-            if(!entries.exists()) {
+            if (!entries.exists()) {
                 return; // not a CVS-controlled directory. No point in recursing
             }
 
@@ -1075,7 +1075,7 @@ public class CVSSCM extends SCM implements Serializable {
             String contents;
             try {
                 contents = FileUtils.readFileToString(entries);
-            } catch(IOException e) {
+            } catch (IOException e) {
                 // reports like http://www.nabble.com/Exception-while-checking-out-from-CVS-td24256117.html
                 // indicates that CVS/Entries may contain something more than we know of. leave them as is
                 LOGGER.log(INFO, "Failed to parse " + entries, e);
@@ -1084,14 +1084,14 @@ public class CVSSCM extends SCM implements Serializable {
             StringBuilder newContents = new StringBuilder(contents.length());
             String[] lines = contents.split("\n");
 
-            for(String line : lines) {
+            for (String line : lines) {
                 int idx = line.lastIndexOf('/');
-                if(idx == -1) {
+                if (idx == -1) {
                     continue;       // something is seriously wrong with this line. just skip.
                 }
 
                 String date = line.substring(idx + 1);
-                if(STICKY_DATE.matcher(date.trim()).matches()) {
+                if (STICKY_DATE.matcher(date.trim()).matches()) {
                     // the format is like "D2008.01.21.23.30.44"
                     line = line.substring(0, idx + 1);
                     modified = true;
@@ -1100,7 +1100,7 @@ public class CVSSCM extends SCM implements Serializable {
                 newContents.append(line).append('\n');
             }
 
-            if(modified) {
+            if (modified) {
                 // write it back
                 AtomicFileWriter w = new AtomicFileWriter(entries, null);
                 try {
@@ -1113,8 +1113,8 @@ public class CVSSCM extends SCM implements Serializable {
 
             // recursively process children
             File[] children = f.listFiles();
-            if(children != null) {
-                for(File child : children) {
+            if (children != null) {
+                for (File child : children) {
                     process(child);
                 }
             }
@@ -1173,10 +1173,14 @@ public class CVSSCM extends SCM implements Serializable {
 
         public String getCvspassFile() {
             String value = cvsPassFile;
-            if(value == null) {
+            if (value == null) {
                 value = "";
             }
             return value;
+        }
+
+        protected Map<String, RepositoryBrowser> getBrowsers() {
+            return browsers;
         }
 
         public String getCvsExe() {
@@ -1189,7 +1193,7 @@ public class CVSSCM extends SCM implements Serializable {
         }
 
         public String getCvsExeOrDefault() {
-            if(Util.fixEmpty(cvsExe) == null) {
+            if (Util.fixEmpty(cvsExe) == null) {
                 return "cvs";
             } else {
                 return cvsExe;
@@ -1225,9 +1229,9 @@ public class CVSSCM extends SCM implements Serializable {
          */
         public Set<String> getAllCvsRoots() {
             Set<String> r = new TreeSet<String>();
-            for(AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class)) {
+            for (AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class)) {
                 SCM scm = p.getScm();
-                if(scm instanceof CVSSCM) {
+                if (scm instanceof CVSSCM) {
                     CVSSCM cvsscm = (CVSSCM) scm;
                     r.add(cvsscm.getCvsRoot());
                 }
@@ -1243,20 +1247,20 @@ public class CVSSCM extends SCM implements Serializable {
         public FormValidation doCheckCvspassFile(@QueryParameter String value) {
             // this method can be used to check if a file exists anywhere in the file system,
             // so it should be protected.
-            if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) {
+            if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) {
                 return FormValidation.ok();
             }
 
             value = fixEmpty(value);
-            if(value == null) // not entered
+            if (value == null) // not entered
             {
                 return FormValidation.ok();
             }
 
             File cvsPassFile = new File(value);
 
-            if(cvsPassFile.exists()) {
-                if(cvsPassFile.isDirectory()) {
+            if (cvsPassFile.exists()) {
+                if (cvsPassFile.isDirectory()) {
                     return FormValidation.error(cvsPassFile + " is a directory");
                 } else {
                     return FormValidation.ok();
@@ -1284,7 +1288,7 @@ public class CVSSCM extends SCM implements Serializable {
                     .cmds(getCvsExeOrDefault(), "--version").stdout(baos).join();
                 rsp.setContentType("text/plain");
                 baos.writeTo(rsp.getOutputStream());
-            } catch(IOException e) {
+            } catch (IOException e) {
                 req.setAttribute("error", e);
                 rsp.forward(this, "versionCheckError", req);
             }
@@ -1296,7 +1300,7 @@ public class CVSSCM extends SCM implements Serializable {
         public FormValidation doCheckBranch(@QueryParameter String value) {
             String v = fixNull(value);
 
-            if(v.equals("HEAD")) {
+            if (v.equals("HEAD")) {
                 return FormValidation.error(Messages.CVSSCM_HeadIsNotBranch());
             }
 
@@ -1310,44 +1314,38 @@ public class CVSSCM extends SCM implements Serializable {
          */
         public FormValidation doCheckCvsRoot(@QueryParameter String value) throws IOException {
             String v = fixEmpty(value);
-            if(v == null) {
+            if (v == null) {
                 return FormValidation.error(Messages.CVSSCM_MissingCvsroot());
             }
 
             Matcher m = CVSROOT_PSERVER_PATTERN.matcher(v);
 
             // CVSROOT format isn't really that well defined. So it's hard to check this rigorously.
-            if(v.startsWith(":pserver") || v.startsWith(":ext")) {
-                if(!m.matches()) {
-                    return FormValidation.error(Messages.CVSSCM_InvalidCvsroot());
-                }
+            if ((v.startsWith(":pserver") || v.startsWith(":ext")) && !m.matches()) {
                 // I can't really test if the machine name exists, either.
                 // some cvs, such as SOCKS-enabled cvs can resolve host names that Hudson might not
                 // be able to. If :ext is used, all bets are off anyway.
+                return FormValidation.error(Messages.CVSSCM_InvalidCvsroot());
             }
 
             // check .cvspass file to see if it has entry.
             // CVS handles authentication only if it's pserver.
-            if(v.startsWith(":pserver")) {
-                if(m.group(2) == null) {// if password is not specified in CVSROOT
-                    String cvspass = getCvspassFile();
-                    File passfile;
-                    if(cvspass.equals("")) {
-                        passfile = new File(new File(System.getProperty("user.home")), ".cvspass");
-                    } else {
-                        passfile = new File(cvspass);
-                    }
+            if (v.startsWith(":pserver") && m.group(2) == null) {// if password is not specified in CVSROOT
+                String cvspass = getCvspassFile();
+                File passfile;
+                if (cvspass.equals("")) {
+                    passfile = new File(new File(System.getProperty("user.home")), ".cvspass");
+                } else {
+                    passfile = new File(cvspass);
+                }
 
-                    if(passfile.exists()) {
-                        // It's possible that we failed to locate the correct .cvspass file location,
-                        // so don't report an error if we couldn't locate this file.
-                        //
-                        // if this is explicitly specified, then our system config page should have
-                        // reported an error.
-                        if(!scanCvsPassFile(passfile, v)) {
-                            return FormValidation.error(Messages.CVSSCM_PasswordNotSet());
-                        }
-                    }
+                if (passfile.exists() && !scanCvsPassFile(passfile, v)) {
+                    // It's possible that we failed to locate the correct .cvspass file location,
+                    // so don't report an error if we couldn't locate this file.
+                    //
+                    // if this is explicitly specified, then our system config page should have
+                    // reported an error.
+                    return FormValidation.error(Messages.CVSSCM_PasswordNotSet());
                 }
             }
             return FormValidation.ok();
@@ -1359,10 +1357,10 @@ public class CVSSCM extends SCM implements Serializable {
         public FormValidation doCheckExcludeRegions(@QueryParameter String value) {
             String v = fixNull(value).trim();
 
-            for(String region : v.split("[\\r\\n]+")) {
+            for (String region : v.split("[\\r\\n]+")) {
                 try {
                     Pattern.compile(region);
-                } catch(PatternSyntaxException e) {
+                } catch (PatternSyntaxException e) {
                     return FormValidation.error("Invalid regular expression. " + e.getMessage());
                 }
             }
@@ -1378,16 +1376,16 @@ public class CVSSCM extends SCM implements Serializable {
             BufferedReader in = new BufferedReader(new FileReader(passfile));
             try {
                 String line;
-                while((line = in.readLine()) != null) {
+                while ((line = in.readLine()) != null) {
                     // "/1 " version always have the port number in it, so examine a much with
                     // default port 2401 left out
                     int portIndex = line.indexOf(":2401/");
                     String line2 = "";
-                    if(portIndex >= 0) {
+                    if (portIndex >= 0) {
                         line2 = line.substring(0, portIndex + 1) + line.substring(portIndex + 5); // leave '/'
                     }
 
-                    if(line.startsWith(cvsroot) || line.startsWith(cvsroot2) || line2.startsWith(cvsroot2)) {
+                    if (line.startsWith(cvsroot) || line.startsWith(cvsroot2) || line2.startsWith(cvsroot2)) {
                         return true;
                     }
                 }
@@ -1412,7 +1410,7 @@ public class CVSSCM extends SCM implements Serializable {
             String cvsroot = req.getParameter("cvsroot");
             String password = req.getParameter("password");
 
-            if(cvsroot == null || password == null) {
+            if (cvsroot == null || password == null) {
                 rsp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }

@@ -17,9 +17,8 @@
 package hudson.org.apache.tools.ant.taskdefs.cvslib;
 // patched to work around http://issues.apache.org/bugzilla/show_bug.cgi?id=38583
 
-import org.apache.tools.ant.Project;
-import org.apache.commons.io.FileUtils;
-
+import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -29,12 +28,12 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.io.File;
-import java.io.IOException;
+import org.apache.commons.io.FileUtils;
+import org.apache.tools.ant.Project;
 
 /**
  * A class used to parse the output of the CVS log command.
@@ -52,20 +51,20 @@ class ChangeLogParser {
 
     /**
      * input format for dates read in from cvs log.
-     *
+     * <p/>
      * Some users reported that they see different formats,
      * so this is extended from original Ant version to cover different formats.
-     *
-     * <p>
+     * <p/>
+     * <p/>
      * KK: {@link SimpleDateFormat} is not thread safe, so make it per-instance.
      */
     private final SimpleDateFormat[] c_inputDate
         = new SimpleDateFormat[]{
-            new SimpleDateFormat("yyyy/MM/dd HH:mm:ss Z"),
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z"),
-            new SimpleDateFormat("yyyy/MM/dd HH:mm:ss"),
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
-        };
+        new SimpleDateFormat("yyyy/MM/dd HH:mm:ss Z"),
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z"),
+        new SimpleDateFormat("yyyy/MM/dd HH:mm:ss"),
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
+    };
 
     {
         TimeZone utc = TimeZone.getTimeZone("UTC");
@@ -87,7 +86,7 @@ class ChangeLogParser {
      * Keyed by branch revision prefix (like "1.2.3." if files in the branch have revision numbers like
      * "1.2.3.4") and the value is the branch name.
      */
-    private final Map<String,String> branches = new HashMap<String,String>();
+    private final Map<String, String> branches = new HashMap<String, String>();
     /**
      * True if the log record indicates deletion;
      */
@@ -95,8 +94,10 @@ class ChangeLogParser {
 
     private int m_status = GET_FILE;
 
-    /** rcs entries */
-    private final Hashtable<String,CVSEntry> m_entries = new Hashtable<String,CVSEntry>();
+    /**
+     * rcs entries
+     */
+    private final Hashtable<String, CVSEntry> m_entries = new Hashtable<String, CVSEntry>();
 
     private final ChangeLogTask owner;
 
@@ -110,7 +111,7 @@ class ChangeLogParser {
      * @return a list of rcs entries as an array
      */
     CVSEntry[] getEntrySetAsArray() {
-        final CVSEntry[] array = new CVSEntry[ m_entries.size() ];
+        final CVSEntry[] array = new CVSEntry[m_entries.size()];
         Enumeration e = m_entries.elements();
         int i = 0;
         while (e.hasMoreElements()) {
@@ -121,16 +122,17 @@ class ChangeLogParser {
 
     private boolean dead = false;
     private String previousLine = null;
-    
+
     /**
      * Receive notification about the process writing
      * to standard output.
      */
     public void stdout(final String line) {
-        if(dead)
+        if (dead) {
             return;
+        }
         try {
-            switch(m_status) {
+            switch (m_status) {
                 case GET_FILE:
                     // make sure attributes are reset when
                     // working on a 'new' file.
@@ -184,12 +186,12 @@ class ChangeLogParser {
                     = m_comment.length() - lineSeparator.length(); //was -1
                 m_comment = m_comment.substring(0, end);
                 m_status = GET_PREVIOUS_REV;
-                
+
                 processGetPreviousRevision(line);
             } else {
                 m_comment += previousLine + lineSeparator + line + lineSeparator;
             }
-            
+
             previousLine = null;
         } else if (line.startsWith("----------------------------")) {
             if (null != previousLine) {
@@ -213,11 +215,11 @@ class ChangeLogParser {
             File repo = new File(new File(owner.getDir(), m_file).getParentFile(), "CVS/Repository");
             try {
                 String module = FileUtils.readFileToString(repo, null);// not sure what encoding CVS uses.
-                String simpleName = m_file.substring(m_file.lastIndexOf('/')+1);
-                m_fullName = '/'+module.trim()+'/'+simpleName;
+                String simpleName = m_file.substring(m_file.lastIndexOf('/') + 1);
+                m_fullName = '/' + module.trim() + '/' + simpleName;
             } catch (IOException e) {
                 // failed to read
-                LOGGER.log(Level.WARNING, "Failed to read CVS/Repository at "+repo,e);
+                LOGGER.log(Level.WARNING, "Failed to read CVS/Repository at " + repo, e);
                 m_fullName = null;
             }
 
@@ -232,19 +234,19 @@ class ChangeLogParser {
         if (line.startsWith("\t")) {
             line = line.trim();
             int idx = line.lastIndexOf(':');
-            if(idx<0) {
+            if (idx < 0) {
                 // ???
                 return;
             }
 
-            String symbol = line.substring(0,idx);
+            String symbol = line.substring(0, idx);
             Matcher m = DOT_PATTERN.matcher(line.substring(idx + 2));
-            if(!m.matches())
+            if (!m.matches()) {
                 return; // not a branch name
+            }
 
-            branches.put(m.group(1)+m.group(3)+'.',symbol);
-        } else
-        if (line.startsWith("keyword substitution:")) {
+            branches.put(m.group(1) + m.group(3) + '.', symbol);
+        } else if (line.startsWith("keyword substitution:")) {
             m_status = GET_REVISION;
         }
     }
@@ -281,7 +283,7 @@ class ChangeLogParser {
 
             m_status = GET_COMMENT;
 
-            m_dead = lineData.indexOf("state: dead;")!=-1;
+            m_dead = lineData.indexOf("state: dead;") != -1;
 
             //Reset comment to empty here as we can accumulate multiple lines
             //in the processComment method
@@ -322,7 +324,9 @@ class ChangeLogParser {
 
         String branch = findBranch(m_revision);
 
-        owner.log("Recorded a change: "+m_date+','+m_author+','+m_revision+"(branch="+branch+"),"+m_comment,Project.MSG_VERBOSE);
+        owner.log(
+            "Recorded a change: " + m_date + ',' + m_author + ',' + m_revision + "(branch=" + branch + ")," + m_comment,
+            Project.MSG_VERBOSE);
 
         entry.addFile(m_file, m_fullName, m_revision, m_previousRevision, branch, m_dead);
     }
@@ -331,10 +335,13 @@ class ChangeLogParser {
      * Finds the branch name that matches the revision, or null if not found.
      */
     private String findBranch(String revision) {
-        if(revision==null)  return null; // defensive check
-        for (Entry<String,String> e : branches.entrySet()) {
-            if(revision.startsWith(e.getKey()) && revision.substring(e.getKey().length()).indexOf('.')==-1)
+        if (revision == null) {
+            return null; // defensive check
+        }
+        for (Entry<String, String> e : branches.entrySet()) {
+            if (revision.startsWith(e.getKey()) && revision.substring(e.getKey().length()).indexOf('.') == -1) {
                 return e.getValue();
+            }
         }
         return null;
     }
@@ -350,12 +357,12 @@ class ChangeLogParser {
             try {
                 return df.parse(date);
             } catch (ParseException e) {
-                // try next if one fails
+                LOGGER.log(Level.FINER, "Couldn't convert " + date + " to format " + df);
             }
         }
 
         // nothing worked
-        owner.log("Failed to parse "+date+"\n", Project.MSG_ERR);
+        owner.log("Failed to parse " + date + "\n", Project.MSG_ERR);
         //final String message = REZ.getString( "changelog.bat-date.error", date );
         //getContext().error( message );
         return null;

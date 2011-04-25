@@ -16,13 +16,8 @@
  */
 package hudson.org.apache.tools.ant.taskdefs.cvslib;
 
-import hudson.util.ForkOutputStream;
 import hudson.org.apache.tools.ant.taskdefs.AbstractCvsTask;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.LogOutputStream;
-import org.apache.tools.ant.taskdefs.cvslib.CvsVersion;
-
+import hudson.util.ForkOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,13 +32,18 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 import java.util.StringTokenizer;
+import java.util.Vector;
+import org.apache.commons.io.IOUtils;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.ExecuteStreamHandler;
+import org.apache.tools.ant.taskdefs.LogOutputStream;
+import org.apache.tools.ant.taskdefs.cvslib.CvsVersion;
 
 /**
  * Examines the output of cvs log and group related changes together.
- *
+ * <p/>
  * It produces an XML output representing the list of changes.
  * <PRE>
  * <FONT color=#0000ff>&lt;!-- Root element --&gt;</FONT>
@@ -67,26 +67,38 @@ import org.apache.tools.ant.taskdefs.ExecuteStreamHandler;
  * </PRE>
  *
  * @version $Revision: 23071 $ $Date: 2009-10-22 16:03:44 -0700 (Thu, 22 Oct 2009) $
- * @since Ant 1.5
  * @ant.task name="cvschangelog" category="scm"
+ * @since Ant 1.5
  */
 public class ChangeLogTask extends AbstractCvsTask {
-    /** User list */
+    /**
+     * User list
+     */
     private File m_usersFile;
 
-    /** User list */
+    /**
+     * User list
+     */
     private Vector m_cvsUsers = new Vector();
 
-    /** Input dir */
+    /**
+     * Input dir
+     */
     private File m_dir;
 
-    /** Output */
+    /**
+     * Output
+     */
     private OutputStream m_output;
 
-    /** The earliest date at which to start processing entries.  */
+    /**
+     * The earliest date at which to start processing entries.
+     */
     private Date m_start;
 
-    /** The latest date at which to stop processing entries.  */
+    /**
+     * The latest date at which to stop processing entries.
+     */
     private Date m_stop;
 
     /**
@@ -178,7 +190,7 @@ public class ChangeLogTask extends AbstractCvsTask {
      */
     public void setDaysinpast(final int days) {
         final long time = System.currentTimeMillis()
-             - (long) days * 24 * 60 * 60 * 1000;
+            - (long) days * 24 * 60 * 60 * 1000;
 
         setStart(new Date(time));
     }
@@ -187,26 +199,26 @@ public class ChangeLogTask extends AbstractCvsTask {
     /**
      * Adds a file about which cvs logs will be generated.
      *
-     * @param fileName
-     *      fileName relative to {@link #setDir(File)}.
+     * @param fileName fileName relative to {@link #setDir(File)}.
      */
     public void addFile(String fileName) {
         m_filesets.add(fileName);
     }
 
     public void setFile(List<String> files) {
-        m_filesets  = files;
+        m_filesets = files;
     }
 
 
     // XXX crude but how else to track the parser & handler and still pass to super impl?
     private ChangeLogParser parser;
     private RedirectingStreamHandler handler;
+
     /**
      * Execute task
      *
-     * @exception BuildException if something goes wrong executing the
-     *            cvs command
+     * @throws BuildException if something goes wrong executing the
+     *                        cvs command
      */
     public void execute() throws BuildException {
         File savedDir = m_dir; // may be altered in validate
@@ -229,7 +241,7 @@ public class ChangeLogTask extends AbstractCvsTask {
 
             setCommand("log");
 
-            if (m_filesets.isEmpty() || m_filesets.size()>10) {
+            if (m_filesets.isEmpty() || m_filesets.size() > 10) {
                 // if we are going to get logs on large number of files,
                 // (or if m_files is not specified at all, in which case all the files in the directory is subjec,
                 // then it's worth spending little time to figure out if we can use
@@ -244,7 +256,7 @@ public class ChangeLogTask extends AbstractCvsTask {
                 myCvsVersion.setDest(m_dir);
                 myCvsVersion.execute();
                 if (supportsCvsLogWithSOption(myCvsVersion.getClientVersion())
-                 && supportsCvsLogWithSOption(myCvsVersion.getServerVersion())) {
+                    && supportsCvsLogWithSOption(myCvsVersion.getServerVersion())) {
                     addCommandArgument("-S");
                 }
             }
@@ -264,14 +276,14 @@ public class ChangeLogTask extends AbstractCvsTask {
                 // unnecessarily, but given that in Hudson we already narrow down the scope
                 // by specifying files, this should be acceptable increase.
 
-                Date safeStart = new Date(m_start.getTime()-1000L*60*60*24);
+                Date safeStart = new Date(m_start.getTime() - 1000L * 60 * 60 * 24);
 
                 // Kohsuke patch until here
 
                 // We want something of the form: -d ">=YYYY-MM-dd"
                 final String dateRange = ">=" + outputDate.format(safeStart);
 
-        // Supply '-d' as a separate argument - Bug# 14397
+                // Supply '-d' as a separate argument - Bug# 14397
                 addCommandArgument("-d");
                 addCommandArgument(dateRange);
             }
@@ -286,7 +298,7 @@ public class ChangeLogTask extends AbstractCvsTask {
 
             parser = new ChangeLogParser(this);
 
-            log("Running "+getCommand()+" at "+m_dir, Project.MSG_VERBOSE);
+            log("Running " + getCommand() + " at " + m_dir, Project.MSG_VERBOSE);
 
             setDest(m_dir);
             try {
@@ -294,7 +306,7 @@ public class ChangeLogTask extends AbstractCvsTask {
             } finally {
                 final String errors = handler.getErrors();
 
-                if (null != errors && errors.length()!=0) {
+                if (null != errors && errors.length() != 0) {
                     log(errors, Project.MSG_ERR);
                 }
             }
@@ -310,20 +322,24 @@ public class ChangeLogTask extends AbstractCvsTask {
             m_dir = savedDir;
         }
     }
-    protected @Override ExecuteStreamHandler getExecuteStreamHandler(InputStream input) {
+
+    protected
+    @Override
+    ExecuteStreamHandler getExecuteStreamHandler(InputStream input) {
         return handler = new RedirectingStreamHandler(
-                // stdout goes to the changelog parser,
-                // but we also send this to Ant logger so that we can see it at sufficient debug level
-                new ForkOutputStream(new RedirectingOutputStream(parser),
-                    new LogOutputStream(this,Project.MSG_VERBOSE)),
-                // stderr goes to the logger, too
-                new LogOutputStream(this,Project.MSG_WARN),
-                
-                input);
+            // stdout goes to the changelog parser,
+            // but we also send this to Ant logger so that we can see it at sufficient debug level
+            new ForkOutputStream(new RedirectingOutputStream(parser),
+                new LogOutputStream(this, Project.MSG_VERBOSE)),
+            // stderr goes to the logger, too
+            new LogOutputStream(this, Project.MSG_WARN),
+
+            input);
     }
 
     private static final long VERSION_1_11_2 = 11102;
     private static final long MULTIPLY = 100;
+
     /**
      * Rip off from {@link CvsVersion#supportsCvsLogWithSOption()}
      * but we need to check both client and server.
@@ -339,9 +355,11 @@ public class ChangeLogTask extends AbstractCvsTask {
             String s = mySt.nextToken();
             int startpos;
             // find the first digit char
-            for (startpos = 0; startpos < s.length(); startpos++)
-                if (Character.isDigit(s.charAt(startpos)))
+            for (startpos = 0; startpos < s.length(); startpos++) {
+                if (Character.isDigit(s.charAt(startpos))) {
                     break;
+                }
+            }
             // ... and up to the end of this digit set
             int i;
             for (i = startpos; i < s.length(); i++) {
@@ -365,7 +383,7 @@ public class ChangeLogTask extends AbstractCvsTask {
      * @throws BuildException if fails validation checks
      */
     private void validate()
-         throws BuildException {
+        throws BuildException {
         if (null == m_dir) {
             m_dir = getProject().getBaseDir();
         }
@@ -376,13 +394,13 @@ public class ChangeLogTask extends AbstractCvsTask {
         }
         if (!m_dir.exists()) {
             final String message = "Cannot find base dir "
-                 + m_dir.getAbsolutePath();
+                + m_dir.getAbsolutePath();
 
             throw new BuildException(message);
         }
         if (null != m_usersFile && !m_usersFile.exists()) {
             final String message = "Cannot find user lookup list "
-                 + m_usersFile.getAbsolutePath();
+                + m_usersFile.getAbsolutePath();
 
             throw new BuildException(message);
         }
@@ -396,7 +414,7 @@ public class ChangeLogTask extends AbstractCvsTask {
      * @throws BuildException if file can not be loaded for some reason
      */
     private void loadUserlist(final Properties userList)
-         throws BuildException {
+        throws BuildException {
         if (null != m_usersFile) {
             try {
                 userList.load(new FileInputStream(m_usersFile));
@@ -413,34 +431,35 @@ public class ChangeLogTask extends AbstractCvsTask {
      * @return the filtered entry set
      */
     private CVSEntry[] filterEntrySet(final CVSEntry[] entrySet) {
-        log("Filtering entries",Project.MSG_VERBOSE);
+        log("Filtering entries", Project.MSG_VERBOSE);
 
         final Vector results = new Vector();
 
         for (int i = 0; i < entrySet.length; i++) {
             final CVSEntry cvsEntry = entrySet[i];
             final Date date = cvsEntry.getDate();
-            
-            if(date==null) {
+
+            if (date == null) {
                 // skip dates that didn't parse.
-                log("Filtering out "+cvsEntry+" because it has no date",Project.MSG_VERBOSE);
+                log("Filtering out " + cvsEntry + " because it has no date", Project.MSG_VERBOSE);
                 continue;
             }
 
             if (null != m_start && m_start.after(date)) {
                 //Skip dates that are too early
-                log("Filtering out "+cvsEntry+" because it's too early compare to "+m_start,Project.MSG_VERBOSE);
+                log("Filtering out " + cvsEntry + " because it's too early compare to " + m_start, Project.MSG_VERBOSE);
                 continue;
             }
             if (null != m_stop && m_stop.before(date)) {
                 //Skip dates that are too late
-                log("Filtering out "+cvsEntry+" because it's too late compare to "+m_stop,Project.MSG_VERBOSE);
+                log("Filtering out " + cvsEntry + " because it's too late compare to " + m_stop, Project.MSG_VERBOSE);
                 continue;
             }
             //if tag was specified, it takes care of branches or HEAD, because it does not go out of one. Otherwise HEAD or specified Brach should be filtered
             if (null == getTag() && !cvsEntry.containsBranch(branch)) {
                 // didn't match the branch
-                log("Filtering out "+cvsEntry+" because it didn't match the branch '"+branch+"'",Project.MSG_VERBOSE);
+                log("Filtering out " + cvsEntry + " because it didn't match the branch '" + branch + "'",
+                    Project.MSG_VERBOSE);
                 continue;
             }
             results.addElement(cvsEntry);
@@ -459,7 +478,7 @@ public class ChangeLogTask extends AbstractCvsTask {
                                          final CVSEntry[] entrySet) {
         for (int i = 0; i < entrySet.length; i++) {
 
-            final CVSEntry entry = entrySet[ i ];
+            final CVSEntry entry = entrySet[i];
             if (userList.containsKey(entry.getAuthor())) {
                 entry.setAuthor(userList.getProperty(entry.getAuthor()));
             }
@@ -473,7 +492,7 @@ public class ChangeLogTask extends AbstractCvsTask {
      * @throws BuildException if there is an error writing changelog.
      */
     private void writeChangeLog(final CVSEntry[] entrySet)
-         throws BuildException {
+        throws BuildException {
         OutputStream output = null;
 
         try {
@@ -490,12 +509,7 @@ public class ChangeLogTask extends AbstractCvsTask {
         } catch (final IOException ioe) {
             throw new BuildException(ioe.toString(), ioe);
         } finally {
-            if (null != output) {
-                try {
-                    output.close();
-                } catch (final IOException ioe) {
-                }
-            }
+            IOUtils.closeQuietly(output);
         }
     }
 }

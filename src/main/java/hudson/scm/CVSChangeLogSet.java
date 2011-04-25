@@ -28,6 +28,8 @@ import hudson.model.User;
 import hudson.scm.CVSChangeLogSet.CVSChangeLog;
 import hudson.util.IOException2;
 import hudson.util.Digester2;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.apache.commons.digester.Digester;
@@ -46,6 +48,8 @@ import java.util.AbstractList;
  * @author Kohsuke Kawaguchi
  */
 public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
+    private static final Logger LOGGER = Logger.getLogger(CVSChangeLogSet.class.getName());
+
     private List<CVSChangeLog> logs;
 
     public CVSChangeLogSet(AbstractBuild<?,?> build, List<CVSChangeLog> logs) {
@@ -164,6 +168,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
 
         // this is necessary since core and CVS belong to different classloaders.
         protected void setParent(ChangeLogSet parent) {
+            LOGGER.log(Level.FINEST, "Set parent " + parent);
             super.setParent(parent);
         }
 

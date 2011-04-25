@@ -20,6 +20,10 @@
         </developer>
     </developers>
 
+    <properties>
+        <compileSource>1.6</compileSource>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.jvnet.hudson.main</groupId>
@@ -27,4 +31,32 @@
             <version>2.0.0</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <verbose>true</verbose>
+                    <targetJdk>${compileSource}</targetJdk>
+                    <outputDirectory>${project.reporting.outputDirectory}</outputDirectory>
+                    <targetDirectory>${project.build.directory}</targetDirectory>
+                    <excludeRoots>
+                        <excludeRoot>${basedir}/target/generated-sources/</excludeRoot>
+                    </excludeRoots>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                            <goal>cpd-check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
