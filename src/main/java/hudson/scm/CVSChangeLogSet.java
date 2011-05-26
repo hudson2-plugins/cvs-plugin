@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2011, Oracle Corporation, Kohsuke Kawaguchi, Nikita Levyankov
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@ import hudson.util.IOException2;
 import hudson.util.Digester2;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.apache.commons.digester.Digester;
@@ -38,7 +39,6 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Collection;
 import java.util.AbstractList;
@@ -46,6 +46,7 @@ import java.util.AbstractList;
 /**
  * {@link ChangeLogSet} for CVS.
  * @author Kohsuke Kawaguchi
+ * @author Nikita Levyankov
  */
 public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
     private static final Logger LOGGER = Logger.getLogger(CVSChangeLogSet.class.getName());
@@ -64,16 +65,6 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
      */
     public List<CVSChangeLog> getLogs() {
         return logs;
-    }
-
-    @Override
-    public boolean isEmptySet() {
-        return logs.isEmpty();
-    }
-
-
-    public Iterator<CVSChangeLog> iterator() {
-        return logs.iterator();
     }
 
     @Override
@@ -196,6 +187,17 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             this.time = time;
         }
 
+        /**
+         * This method returns Empty string as revision number.
+         * CVS stores revision numbers for files in unique way, so it's better to check revision from
+         * {@link hudson.scm.CVSChangeLogSet.File#getRevision()}
+         * @return Empty string
+         */
+        @Override
+        public String getCurrentRevision() {
+            return StringUtils.EMPTY;
+        }
+
         @Exported
         public User getAuthor() {
             if(author==null)
@@ -259,10 +261,12 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         private CVSChangeLog parent;
 
         /**
-         * Inherited from AffectedFile
-         */        
+         * Returns file path with current revision postfix.
+         *
+         * For ex. foo/bar/zot.c revision: 1.2.3.4
+         */
         public String getPath() {
-            return getName();
+            return getName() + " revision: " + getRevision();
         }
 
         /**
