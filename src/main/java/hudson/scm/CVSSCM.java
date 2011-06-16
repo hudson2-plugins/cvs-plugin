@@ -444,8 +444,11 @@ public class CVSSCM extends SCM implements Serializable {
         dir.deleteContents();
 
         ArgumentListBuilder cmd = new ArgumentListBuilder();
-        cmd.add(getDescriptor().getCvsExeOrDefault(), noQuiet ? null : (debug ? "-t" : "-Q"), compression(), "-d",
-            cvsroot, "co", "-P");
+        cmd.add(getDescriptor().getCvsExeOrDefault(), noQuiet ? null : (debug ? "-t" : "-Q"), compression());
+        if (preventLineEndingConversion) {
+            cmd.add("--lf");
+        }
+        cmd.add("-d", cvsroot, "co", "-P");
         if (branch != null) {
             cmd.add("-r", branch);
         }
@@ -453,10 +456,6 @@ public class CVSSCM extends SCM implements Serializable {
             cmd.add("-d", dir.getName());
         }
         configureDate(cmd, dt);
-
-        if (preventLineEndingConversion) {
-            cmd.add("--lf");
-        }
 
         cmd.add(getAllModulesNormalized());
 
@@ -567,6 +566,11 @@ public class CVSSCM extends SCM implements Serializable {
 
         ArgumentListBuilder cmd = new ArgumentListBuilder();
         cmd.add(getDescriptor().getCvsExeOrDefault(), debug ? "-t" : "-q", compression());
+
+        if (preventLineEndingConversion) {
+            cmd.add("--lf");
+        }
+
         if (dryRun) {
             cmd.add("-n");
         }
@@ -575,10 +579,6 @@ public class CVSSCM extends SCM implements Serializable {
             cmd.add("-r", branch);
         }
         configureDate(cmd, date);
-
-        if (preventLineEndingConversion) {
-            cmd.add("--lf");
-        }
 
         if (flatten) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
