@@ -144,9 +144,22 @@ public class CVSSCM extends SCM implements Serializable {
 
     private String excludedRegions;
 
-    @DataBoundConstructor
+    /**
+     * Option is required for WinCVS and TortoiseCVS clients
+     */
+    private boolean preventLineEndingConversion;
+
+    /**
+     * @deprecated as of 2.0.2
+     */
     public CVSSCM(String cvsRoot, String allModules, String branch, String cvsRsh, boolean canUseUpdate, boolean legacy,
                   boolean isTag, String excludedRegions) {
+        this(cvsRoot, allModules, branch, cvsRsh, canUseUpdate, legacy, isTag, excludedRegions, false);
+    }
+
+    @DataBoundConstructor
+    public CVSSCM(String cvsRoot, String allModules, String branch, String cvsRsh, boolean canUseUpdate, boolean legacy,
+                  boolean isTag, String excludedRegions, boolean preventLineEndingConversion) {
         if (fixNull(branch).equals("HEAD")) {
             branch = null;
         }
@@ -159,6 +172,7 @@ public class CVSSCM extends SCM implements Serializable {
         this.flatten = !legacy && getAllModulesNormalized().length == 1;
         this.isTag = isTag;
         this.excludedRegions = excludedRegions;
+        this.preventLineEndingConversion = preventLineEndingConversion;
     }
 
     @Override
@@ -296,6 +310,11 @@ public class CVSSCM extends SCM implements Serializable {
         return !flatten;
     }
 
+    @Exported
+    public boolean isPreventLineEndingConversion() {
+        return preventLineEndingConversion;
+    }
+
     public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener)
         throws IOException, InterruptedException {
         String why = isUpdatable(dir);
@@ -425,8 +444,11 @@ public class CVSSCM extends SCM implements Serializable {
         dir.deleteContents();
 
         ArgumentListBuilder cmd = new ArgumentListBuilder();
-        cmd.add(getDescriptor().getCvsExeOrDefault(), noQuiet ? null : (debug ? "-t" : "-Q"), compression(), "-d",
-            cvsroot, "co", "-P");
+        cmd.add(getDescriptor().getCvsExeOrDefault(), noQuiet ? null : (debug ? "-t" : "-Q"), compression());
+        if (preventLineEndingConversion) {
+            cmd.add("--lf");
+        }
+        cmd.add("-d", cvsroot, "co", "-P");
         if (branch != null) {
             cmd.add("-r", branch);
         }
@@ -434,6 +456,7 @@ public class CVSSCM extends SCM implements Serializable {
             cmd.add("-d", dir.getName());
         }
         configureDate(cmd, dt);
+
         cmd.add(getAllModulesNormalized());
 
         if (!run(launcher, cmd, listener, flatten ? dir.getParent() : dir)) {
@@ -543,6 +566,11 @@ public class CVSSCM extends SCM implements Serializable {
 
         ArgumentListBuilder cmd = new ArgumentListBuilder();
         cmd.add(getDescriptor().getCvsExeOrDefault(), debug ? "-t" : "-q", compression());
+
+        if (preventLineEndingConversion) {
+            cmd.add("--lf");
+        }
+
         if (dryRun) {
             cmd.add("-n");
         }
