@@ -326,7 +326,7 @@ public class TagAction extends AbstractScmTagAction implements Describable<TagAc
     }
 
     public Descriptor<TagAction> getDescriptor() {
-        return Hudson.getInstance().getDescriptorOrDie(getClass());
+        return Hudson.getInstance().getDescriptorOrDie(TagAction.class);
     }
 
     public static final class TagWorkerThread extends TaskThread {
@@ -368,7 +368,6 @@ public class TagAction extends AbstractScmTagAction implements Describable<TagAc
         }
     }
 
-    //TODO find reason of Caused by: java.lang.AssertionError: class hudson.scm.CVSSCM$TagAction is missing its descriptor
     @Extension
     public static class DescriptorImpl extends Descriptor<TagAction> {
         public String getDisplayName() {
