@@ -1,0 +1,20 @@
+<div>
+    <p>Directory name to store CVS modules.
+    <pre>
+    - workspace
+      - directory_location
+         - module1
+           - src
+           - pom.xml
+         - module2
+           - src
+           - pom.xml
+        </pre>
+    <p>Plugin avoids creating a sub-directory inside the workspace in case of one location and one module, i.e. "flat" structure will
+        be used:
+    <pre>
+    - workspace
+      - src
+      - pom.xml
+    </pre>
+</div>
