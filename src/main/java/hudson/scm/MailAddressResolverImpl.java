@@ -1,5 +1,29 @@
 package hudson.scm;
 
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2004-2011, Oracle Corporation, Kohsuke Kawaguchi, Jene Jasper, Stephen Connolly, Anton Kozak
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.User;
@@ -19,9 +43,7 @@ public class MailAddressResolverImpl extends MailAddressResolver {
         for (AbstractProject<?,?> p : u.getProjects()) {
             SCM scm = p.getScm();
             if (scm instanceof CVSSCM) {
-                CVSSCM cvsscm = (CVSSCM) scm;
-
-                String s = findMailAddressFor(u,cvsscm.getCvsRoot());
+                String s = findMailAddressFor(u,(CVSSCM) scm);
                 if(s!=null) return s;
             }
         }
@@ -32,13 +54,16 @@ public class MailAddressResolverImpl extends MailAddressResolver {
 
     /**
      *
-     * @param scm
-     *      String that represents SCM connectivity.
+     * @param scm scm.
      */
-    protected String findMailAddressFor(User u, String scm) {
-        for (Map.Entry<Pattern, String> e : RULE_TABLE.entrySet())
-            if(e.getKey().matcher(scm).matches())
-                return u.getId()+e.getValue();
+    protected String findMailAddressFor(User u, CVSSCM scm) {
+        for (Map.Entry<Pattern, String> e : RULE_TABLE.entrySet()){
+            for (ModuleLocation moduleLocation : scm.getModuleLocations()) {
+                if(e.getKey().matcher(moduleLocation.getCvsroot()).matches()){
+                    return u.getId()+e.getValue();
+                }
+            }
+        }
         return null;
     }
 

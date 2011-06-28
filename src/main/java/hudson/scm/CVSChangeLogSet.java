@@ -1,8 +1,8 @@
 /*
  * The MIT License
- * 
- * Copyright (c) 2004-2011, Oracle Corporation, Kohsuke Kawaguchi, Nikita Levyankov
- * 
+ *
+ * Copyright (c) 2004-2011, Oracle Corporation, Kohsuke Kawaguchi, Nikita Levyankov, Anton Kozak
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -26,22 +26,21 @@ package hudson.scm;
 import hudson.model.AbstractBuild;
 import hudson.model.User;
 import hudson.scm.CVSChangeLogSet.CVSChangeLog;
-import hudson.util.IOException2;
 import hudson.util.Digester2;
+import hudson.util.IOException2;
+import java.io.IOException;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.digester.Digester;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-import org.apache.commons.digester.Digester;
 import org.xml.sax.SAXException;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Collection;
-import java.util.AbstractList;
 
 /**
  * {@link ChangeLogSet} for CVS.
@@ -300,7 +299,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
                 if(scm instanceof CVSSCM) {
                     CVSSCM cvsscm = (CVSSCM) scm;
                     if(cvsscm.isFlatten()) {
-                        fullName = '/'+cvsscm.getAllModules()+'/'+name;
+                        fullName = '/'+ StringUtils.join(cvsscm.getAllModules(), " ")+'/'+name;
                     } else {
                         // multi-module set up.
                         fullName = '/'+name;
