@@ -1,5 +1,29 @@
 package hudson.scm;
 
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2004-2011, Oracle Corporation, Kohsuke Kawaguchi, Anton Kozak
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -239,24 +263,12 @@ public class TagAction extends AbstractScmTagAction implements Describable<TagAc
 
             // run cvs tag command
             listener.getLogger().println(hudson.scm.cvs.Messages.CVSSCM_TaggingWorkspace());
-            for(String m : scmInstance.getAllModulesNormalized()) {
-                FilePath path = new FilePath(destdir).child(m);
-                boolean isDir = path.isDirectory();
-
-                ArgumentListBuilder cmd = new ArgumentListBuilder();
-                cmd.add(scmInstance.getDescriptor().getCvsExeOrDefault(), "tag");
-                if(isDir) {
-                    cmd.add("-R");
-                }
-                cmd.add(tagName);
-                if(!isDir) {
-                    cmd.add(path.getName());
-                    path = path.getParent();
-                }
-
-                if(!scmInstance.run(new Launcher.LocalLauncher(listener), cmd, listener, path)) {
-                    listener.getLogger().println(hudson.scm.cvs.Messages.CVSSCM_TaggingFailed());
-                    return;
+            for (ModuleLocation moduleLocation : scmInstance.getModuleLocations()) {
+                for (String module : moduleLocation.getNormalizedModules()) {
+                    if (!createTag(tagName, listener, destdir, moduleLocation.getLocalDir(), module,
+                        scmInstance.isFlatten())) {
+                        return;
+                    }
                 }
             }
 
@@ -275,6 +287,30 @@ public class TagAction extends AbstractScmTagAction implements Describable<TagAc
                 e.printStackTrace(listener.fatalError(e.getMessage()));
             }
         }
+    }
+
+    private boolean createTag(String tagName, TaskListener listener, File destdir, String moduleLocalDir,
+                              String module, boolean isFlatten) throws IOException, InterruptedException {
+        FilePath path = (isFlatten ? new FilePath(destdir).child(module)
+            : new FilePath(destdir).child(moduleLocalDir).child(module));
+        boolean isDir = path.isDirectory();
+
+        ArgumentListBuilder cmd = new ArgumentListBuilder();
+        cmd.add(scmInstance.getDescriptor().getCvsExeOrDefault(), "tag");
+        if(isDir) {
+            cmd.add("-R");
+        }
+        cmd.add(tagName);
+        if(!isDir) {
+            cmd.add(path.getName());
+            path = path.getParent();
+        }
+
+        if(!scmInstance.run(new Launcher.LocalLauncher(listener), cmd, listener, path)) {
+            listener.getLogger().println(Messages.CVSSCM_TaggingFailed());
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -332,12 +368,9 @@ public class TagAction extends AbstractScmTagAction implements Describable<TagAc
         }
     }
 
+    //TODO find reason of Caused by: java.lang.AssertionError: class hudson.scm.CVSSCM$TagAction is missing its descriptor
     @Extension
-    public static final class TagActionDescriptor extends Descriptor<TagAction> {
-        public TagActionDescriptor() {
-            super(TagAction.class);
-        }
-
+    public static class DescriptorImpl extends Descriptor<TagAction> {
         public String getDisplayName() {
             return "";
         }

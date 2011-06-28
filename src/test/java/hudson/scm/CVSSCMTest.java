@@ -1,6 +1,8 @@
 package hudson.scm;
 
 import hudson.scm.browsers.ViewCVS;
+import java.util.Arrays;
+import org.apache.commons.lang.ArrayUtils;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
@@ -49,14 +51,7 @@ public class CVSSCMTest extends HudsonTestCase {
     }
 
     private void assertEquals(CVSSCM scm1, CVSSCM scm2) {
-        assertEquals(scm1.getCvsRoot(),scm2.getCvsRoot());
-        assertEquals(scm1.getAllModules(),scm2.getAllModules());
-        assertEquals(scm1.getBranch(),scm2.getBranch());
-        assertEquals(scm1.getCvsRsh(),scm2.getCvsRsh());
-        assertEquals(scm1.getExcludedRegions(),scm2.getExcludedRegions());
-        assertEquals(scm1.getCanUseUpdate(),scm2.getCanUseUpdate());
-        assertEquals(scm1.isFlatten(),scm2.isFlatten());
-        assertEquals(scm1.isTag(),scm2.isTag());
+        assertTrue(Arrays.equals(scm1.getModuleLocations(), scm2.getModuleLocations()));
     }
 
     @Email("https://hudson.dev.java.net/servlets/BrowseList?list=users&by=thread&from=2222483")
