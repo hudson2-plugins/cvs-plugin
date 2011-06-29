@@ -1,70 +1,130 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2004-2011, Oracle Corporation, Kohsuke Kawaguchi, Anton Kozak
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package hudson.scm;
 
-import hudson.scm.browsers.ViewCVS;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.TaskListener;
+import java.io.IOException;
 import java.util.Arrays;
-import org.apache.commons.lang.ArrayUtils;
-import org.jvnet.hudson.test.Email;
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.Bug;
-import hudson.model.FreeStyleProject;
+import java.util.Date;
+import java.util.List;
+import org.junit.Test;
 
-import java.lang.reflect.Field;
-import java.net.URL;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
- * @author Kohsuke Kawaguchi
+ * @author Anton Kozak
  */
-public class CVSSCMTest extends HudsonTestCase {
-    /**
-     * Verifies that there's no data loss.
-     */
-    public void testConfigRoundtrip() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
+public class CVSSCMTest {
+    private static final String CVSROOT = ":pserver:anonymous:password@10.4.0.50:/var/cvsroot";
+    private static final String MODULES = "module1 module2 module\\ name";
+    private static final String BRANCH = "branch";
+    private static final String LOCAL_DIR = "localDir";
 
-        // verify values
-        CVSSCM scm1 = new CVSSCM("cvsroot", "module", "branch", "cvsRsh", true, true, true, "excludedRegions");
-        p.setScm(scm1);
-        roundtrip(p);
-        assertEquals(scm1, (CVSSCM)p.getScm());
-
-        // all boolean fields need to be tried with two values
-        scm1 = new CVSSCM("x", "y", "z", "w", false, false, false, "t");
-        p.setScm(scm1);
-
-        roundtrip(p);
-        assertEquals(scm1, (CVSSCM)p.getScm());
+    @Test
+    public void testGetModuleLocations() {
+        CVSSCM scm = new CVSSCM(Arrays.asList(new ModuleLocation(CVSROOT, MODULES, BRANCH, false, LOCAL_DIR)),
+            null, true, false, null, false);
+        //there are 3 modules
+        assertFalse(scm.isFlatten());
+        assertTrue(scm.isLegacy());
+        assertEquals(scm.getModuleLocations().length, 1);
+        assertEquals(scm.getAllModules().length, 3);
     }
 
-    @Bug(4456)
-    public void testGlobalConfigRoundtrip() throws Exception {
-        CVSSCM.DescriptorImpl d = hudson.getDescriptorByType(CVSSCM.DescriptorImpl.class);
-        d.setCvspassFile("a");
-        d.setCvsExe("b");
-
-        submit(createWebClient().goTo("configure").getFormByName("config"));
-        assertEquals("a",d.getCvspassFile());
-        assertEquals("b",d.getCvsExe());
+    @Test
+    public void testLegacyGetModuleLocations() {
+        CVSSCM scm = new CVSSCM(CVSROOT, MODULES, BRANCH, null, true, false, false, null);
+        //there are 3 modules
+        assertFalse(scm.isFlatten());
+        assertTrue(scm.isLegacy());
+        assertEquals(scm.getModuleLocations().length, 1);
     }
 
-    private void roundtrip(FreeStyleProject p) throws Exception {
-        submit(new WebClient().getPage(p,"configure").getFormByName("config"));
+    @Test
+    public void testFlatten() {
+        CVSSCM scm = new CVSSCM(CVSROOT, "module", BRANCH, null, true, false, false, null);
+        //there are 1 modules
+        assertTrue(scm.isFlatten());
+        assertFalse(scm.isLegacy());
+        assertEquals(scm.getModuleLocations().length, 1);
     }
 
-    private void assertEquals(CVSSCM scm1, CVSSCM scm2) {
-        assertTrue(Arrays.equals(scm1.getModuleLocations(), scm2.getModuleLocations()));
+    @Test
+    public void testLegacy() {
+        CVSSCM scm = new CVSSCM(CVSROOT, "module", BRANCH, null, true, true, false, null);
+        //there are 1 modules, but enabled legacy mode
+        assertFalse(scm.isFlatten());
+        assertTrue(scm.isLegacy());
+        assertEquals(scm.getModuleLocations().length, 1);
     }
 
-    @Email("https://hudson.dev.java.net/servlets/BrowseList?list=users&by=thread&from=2222483")
-    @Bug(4760)
-    public void testProjectExport() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
-        assertBuildStatusSuccess(p.scheduleBuild2(0).get());
-        CVSSCM scm = new CVSSCM(":pserver:nowhere.net/cvs/foo", ".", null, null, true, true, false, null);
-        p.setScm(scm);
-        Field repositoryBrowser = scm.getClass().getDeclaredField("repositoryBrowser");
-        repositoryBrowser.setAccessible(true);
-        repositoryBrowser.set(scm, new ViewCVS(new URL("http://nowhere.net/viewcvs/")));
-        new WebClient().goTo(p.getUrl()+"api/xml", "application/xml");
-        new WebClient().goTo(p.getUrl()+"api/xml?depth=999", "application/xml");
+    @Test
+    public void testRemoveInvalidEntries() {
+        CVSSCM scm = new CVSSCM(null, MODULES, BRANCH, null, true, false, false, null);
+        assertEquals(scm.getModuleLocations().length, 0);
     }
+
+    @Test
+    public void testCompareRemoteRevisionWith() throws IOException, InterruptedException {
+        CVSSCM scm = new CVSSCM(CVSROOT, "module", BRANCH, null, true, true, false, "src/main/web/.*\\.html"){
+            @Override
+            List<String> update(ModuleLocation moduleLocation, boolean dryRun, Launcher launcher, FilePath workspace,
+                                TaskListener listener, Date date) throws IOException, InterruptedException {
+                return newArrayList("src/main/web/pom.xml", "src/main/web/Test2.html");
+            }
+
+            @Override
+            String isUpdatable(ModuleLocation location, FilePath dir) throws IOException, InterruptedException {
+                return null;
+            }
+        };
+        PollingResult result = scm.compareRemoteRevisionWith(null, null, null, null, null);
+        assertEquals(result, PollingResult.BUILD_NOW);
+    }
+
+    @Test
+    public void testCompareRemoteRevisionWithAllExcluded() throws IOException, InterruptedException {
+        CVSSCM scm = new CVSSCM(CVSROOT, "module", BRANCH, null, true, true, false, "src/main/web/.*\\.java\nsrc/main/web/.*\\.xml"){
+            @Override
+            List<String> update(ModuleLocation moduleLocation, boolean dryRun, Launcher launcher, FilePath workspace,
+                                TaskListener listener, Date date) throws IOException, InterruptedException {
+                return newArrayList("src/main/web/pom.xml", "src/main/web/Test2.java");
+            }
+
+            @Override
+            String isUpdatable(ModuleLocation location, FilePath dir) throws IOException, InterruptedException {
+                return null;
+            }
+        };
+        PollingResult result = scm.compareRemoteRevisionWith(null, null, null, null, null);
+        assertEquals(result, PollingResult.NO_CHANGES);
+    }
+
 }

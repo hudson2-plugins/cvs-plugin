@@ -26,7 +26,7 @@ THE SOFTWARE.
   <f:entry title="${%Remote locations}">
     <f:repeatable var="loc" name="moduleLocations" items="${instance.moduleLocations}" noAddButton="true" minimum="1">
       <table width="100%">
-        <f:entry title="${%cvsroot}" field="cvsroot">
+        <f:entry title="${%Cvsroot}" field="cvsroot">
           <f:textbox value="${loc.cvsroot}"/>
         </f:entry>
         <f:entry title="${%Modules}" field="module">

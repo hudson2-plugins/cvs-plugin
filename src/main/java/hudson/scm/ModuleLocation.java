@@ -1,5 +1,3 @@
-package hudson.scm;
-
 /*
  * The MIT License
  *
@@ -23,6 +21,7 @@ package hudson.scm;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package hudson.scm;
 
 import java.io.Serializable;
 import org.apache.commons.lang.StringUtils;
@@ -44,6 +43,7 @@ public final class ModuleLocation implements Serializable {
 
     public static final String HEAD_BRANCH = "HEAD";
     private static final String MODULES_REGEX = "(?<!\\\\)[ \\r\\n]+";
+    static final String DEFAULT_LOCAL_DIR = "./";
 
     /**
      * CVSSCM connection string, like ":pserver:me@host:/cvs"
@@ -82,7 +82,7 @@ public final class ModuleLocation implements Serializable {
         this.module = StringUtils.trim(module);
         this.branch = StringUtils.trim(StringUtils.defaultIfEmpty(branch, null));
         this.isTag = isTag;
-        this.localDir = StringUtils.trim(StringUtils.defaultIfEmpty(localDir, "./"));
+        this.localDir = StringUtils.trim(StringUtils.defaultIfEmpty(localDir, DEFAULT_LOCAL_DIR));
     }
 
     /**
@@ -138,6 +138,7 @@ public final class ModuleLocation implements Serializable {
 
     /**
      * List up all modules to check out.
+     * @return array of split modules from modules string.
      */
     public String[] getNormalizedModules() {
         // split by whitespace, except "\ "
