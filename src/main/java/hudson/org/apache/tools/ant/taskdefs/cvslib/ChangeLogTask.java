@@ -71,6 +71,9 @@ import org.apache.tools.ant.taskdefs.cvslib.CvsVersion;
  * @since Ant 1.5
  */
 public class ChangeLogTask extends AbstractCvsTask {
+
+    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";
+
     /**
      * User list
      */
@@ -262,7 +265,7 @@ public class ChangeLogTask extends AbstractCvsTask {
             }
             if (null != m_start) {
                 final SimpleDateFormat outputDate =
-                    new SimpleDateFormat("yyyy-MM-dd");
+                    new SimpleDateFormat(DATE_FORMAT);
 
                 // Kohsuke patch:
                 // probably due to timezone difference between server/client and
@@ -280,7 +283,7 @@ public class ChangeLogTask extends AbstractCvsTask {
 
                 // Kohsuke patch until here
 
-                // We want something of the form: -d ">=YYYY-MM-dd"
+                // We want something of the form: -d ">=YYYY-MM-dd HH:mm"
                 final String dateRange = ">=" + outputDate.format(safeStart);
 
                 // Supply '-d' as a separate argument - Bug# 14397
