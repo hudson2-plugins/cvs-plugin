@@ -43,7 +43,7 @@ public final class ModuleLocation implements Serializable {
 
     public static final String HEAD_BRANCH = "HEAD";
     private static final String MODULES_REGEX = "(?<!\\\\)[ \\r\\n]+";
-    static final String DEFAULT_LOCAL_DIR = "./";
+    static final String DEFAULT_LOCAL_DIR = ".";
 
     /**
      * CVSSCM connection string, like ":pserver:me@host:/cvs"
