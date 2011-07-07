@@ -27,10 +27,14 @@ package hudson.scm;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.TaskListener;
+import hudson.scm.cvs.*;
+import hudson.util.FormValidation;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.Test;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -125,6 +129,44 @@ public class CVSSCMTest {
         };
         PollingResult result = scm.compareRemoteRevisionWith(null, null, null, null, null);
         assertEquals(result, PollingResult.NO_CHANGES);
+    }
+
+
+    @Test
+    public void testDoCheckCvsrootWithEmptyPassword() throws IOException {
+        String cvsroot = ":pserver:anonymous:@tortoisecvs.cvs.sourceforge.net:/cvsroot/tortoisecvs";
+
+        CVSSCM.DescriptorImpl descriptor = new CVSSCM.DescriptorImpl(false);
+        Matcher matcher = CVSSCM.DescriptorImpl.CVSROOT_PSERVER_PATTERN.matcher(v);
+        assertTrue(descriptor.isCvsrootValid(cvsroot, matcher));
+    }
+    @Test
+    public void testDoCheckCvsrootWithoutPassword() throws IOException {
+        String cvsroot = ":pserver:anonymous@tortoisecvs.cvs.sourceforge.net:/cvsroot/tortoisecvs";
+
+        CVSSCM.DescriptorImpl descriptor = new CVSSCM.DescriptorImpl(false);
+        Matcher matcher = CVSSCM.DescriptorImpl.CVSROOT_PSERVER_PATTERN.matcher(v);
+        assertTrue(descriptor.isCvsrootValid(cvsroot, matcher));
+
+    }
+
+    @Test
+    public void testDoCheckCvsrootWithPassword() throws IOException {
+        String cvsroot = ":pserver:anonymous:password@tortoisecvs.cvs.sourceforge.net:/cvsroot/tortoisecvs";
+
+        CVSSCM.DescriptorImpl descriptor = new CVSSCM.DescriptorImpl(false);
+        Matcher matcher = CVSSCM.DescriptorImpl.CVSROOT_PSERVER_PATTERN.matcher(v);
+        assertTrue(descriptor.isCvsrootValid(cvsroot, matcher));
+
+    }
+
+    @Test
+    public void testDoCheckCvsrootInvalid() throws IOException {
+        String cvsroot = ":pserver@tortoisecvs.cvs.sourceforge.net:/cvsroot/tortoisecvs";
+
+        CVSSCM.DescriptorImpl descriptor = new CVSSCM.DescriptorImpl(false);
+        Matcher matcher = CVSSCM.DescriptorImpl.CVSROOT_PSERVER_PATTERN.matcher(v);
+        assertFalse(descriptor.isCvsrootValid(cvsroot, matcher));
     }
 
 }
