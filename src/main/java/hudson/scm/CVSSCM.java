@@ -1113,8 +1113,8 @@ public class CVSSCM extends SCM implements Serializable {
 
     @Extension
     public static final class DescriptorImpl extends SCMDescriptor<CVSSCM> implements ModelObject {
-        private static final Pattern CVSROOT_PSERVER_PATTERN =
-            Pattern.compile(":(ext|extssh|pserver):[^@:]+(:[^@:]+)?@[^:]+:(\\d+:)?.+");
+        static final Pattern CVSROOT_PSERVER_PATTERN =
+            Pattern.compile(":(ext|extssh|pserver):[^@:]+(:[^@:]*)?@[^:]+:(\\d+:)?.+");
 
         /**
          * Path to <tt>.cvspass</tt>. Null to default.
@@ -1143,6 +1143,16 @@ public class CVSSCM extends SCM implements Serializable {
         public DescriptorImpl() {
             super(CVSRepositoryBrowser.class);
             load();
+        }
+
+        /**
+         * For the tests only
+         */
+        DescriptorImpl(boolean isLoad) {
+            super(CVSRepositoryBrowser.class);
+            if (isLoad) {
+                load();
+            }
         }
 
         public String getDisplayName() {
@@ -1273,40 +1283,19 @@ public class CVSSCM extends SCM implements Serializable {
          * Also checks if .cvspass file contains the entry for this.
          */
         public FormValidation doCheckCvsroot(@QueryParameter String value) throws IOException {
-            String v = fixEmpty(value);
+            String v = StringUtils.trim(StringUtils.defaultIfEmpty(value, null));
             if (v == null) {
                 return FormValidation.error(Messages.CVSSCM_MissingCvsroot());
             }
 
-            Matcher m = CVSROOT_PSERVER_PATTERN.matcher(v);
+            Matcher matcher = CVSROOT_PSERVER_PATTERN.matcher(v);
 
-            // CVSROOT format isn't really that well defined. So it's hard to check this rigorously.
-            if ((v.startsWith(":pserver") || v.startsWith(":ext")) && !m.matches()) {
-                // I can't really test if the machine name exists, either.
-                // some cvs, such as SOCKS-enabled cvs can resolve host names that Hudson might not
-                // be able to. If :ext is used, all bets are off anyway.
+            if (!isCvsrootValid(v, matcher)) {
                 return FormValidation.error(Messages.CVSSCM_InvalidCvsroot());
             }
 
-            // check .cvspass file to see if it has entry.
-            // CVS handles authentication only if it's pserver.
-            if (v.startsWith(":pserver") && m.group(2) == null) {// if password is not specified in CVSROOT
-                String cvspass = getCvspassFile();
-                File passfile;
-                if (cvspass.equals("")) {
-                    passfile = new File(new File(System.getProperty("user.home")), ".cvspass");
-                } else {
-                    passfile = new File(cvspass);
-                }
-
-                if (passfile.exists() && !scanCvsPassFile(passfile, v)) {
-                    // It's possible that we failed to locate the correct .cvspass file location,
-                    // so don't report an error if we couldn't locate this file.
-                    //
-                    // if this is explicitly specified, then our system config page should have
-                    // reported an error.
-                    return FormValidation.error(Messages.CVSSCM_PasswordNotSet());
-                }
+            if (!isPasswordSet(v, matcher)) {
+                return FormValidation.error(Messages.CVSSCM_PasswordNotSet());
             }
             return FormValidation.ok();
         }
@@ -1359,6 +1348,36 @@ public class CVSSCM extends SCM implements Serializable {
         protected Map<String, RepositoryBrowser> getBrowsers() {
             return browsers;
         }
+
+        private boolean isPasswordSet(String url, Matcher matcher) throws IOException {
+            // check .cvspass file to see if it has entry.
+            // CVS handles authentication only if it's pserver.
+            if (url.startsWith(":pserver") && matcher.group(2) == null) {// if password is not specified in CVSROOT
+                String cvspass = getCvspassFile();
+                File passfile;
+                if (cvspass.equals("")) {
+                    passfile = new File(new File(System.getProperty("user.home")), ".cvspass");
+                } else {
+                    passfile = new File(cvspass);
+                }
+
+                if (passfile.exists() && !scanCvsPassFile(passfile, url)) {
+                    // It's possible that we failed to locate the correct .cvspass file location,
+                    // so don't report an error if we couldn't locate this file.
+                    //
+                    // if this is explicitly specified, then our system config page should have
+                    // reported an error.
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        boolean isCvsrootValid(String url, Matcher matcher) {
+            // CVSROOT format isn't really that well defined. So it's hard to check this rigorously.
+            return !((url.startsWith(":pserver") || url.startsWith(":ext")) && !matcher.matches());
+        }
+
         /**
          * Checks if the given pserver CVSROOT value exists in the pass file.
          */
