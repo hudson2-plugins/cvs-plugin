@@ -137,7 +137,7 @@ public class CVSSCMTest {
         String cvsroot = ":pserver:anonymous:@tortoisecvs.cvs.sourceforge.net:/cvsroot/tortoisecvs";
 
         CVSSCM.DescriptorImpl descriptor = new CVSSCM.DescriptorImpl(false);
-        Matcher matcher = CVSSCM.DescriptorImpl.CVSROOT_PSERVER_PATTERN.matcher(v);
+        Matcher matcher = CVSSCM.DescriptorImpl.CVSROOT_PSERVER_PATTERN.matcher(cvsroot);
         assertTrue(descriptor.isCvsrootValid(cvsroot, matcher));
     }
     @Test
@@ -145,7 +145,7 @@ public class CVSSCMTest {
         String cvsroot = ":pserver:anonymous@tortoisecvs.cvs.sourceforge.net:/cvsroot/tortoisecvs";
 
         CVSSCM.DescriptorImpl descriptor = new CVSSCM.DescriptorImpl(false);
-        Matcher matcher = CVSSCM.DescriptorImpl.CVSROOT_PSERVER_PATTERN.matcher(v);
+        Matcher matcher = CVSSCM.DescriptorImpl.CVSROOT_PSERVER_PATTERN.matcher(cvsroot);
         assertTrue(descriptor.isCvsrootValid(cvsroot, matcher));
 
     }
@@ -155,7 +155,7 @@ public class CVSSCMTest {
         String cvsroot = ":pserver:anonymous:password@tortoisecvs.cvs.sourceforge.net:/cvsroot/tortoisecvs";
 
         CVSSCM.DescriptorImpl descriptor = new CVSSCM.DescriptorImpl(false);
-        Matcher matcher = CVSSCM.DescriptorImpl.CVSROOT_PSERVER_PATTERN.matcher(v);
+        Matcher matcher = CVSSCM.DescriptorImpl.CVSROOT_PSERVER_PATTERN.matcher(cvsroot);
         assertTrue(descriptor.isCvsrootValid(cvsroot, matcher));
 
     }
@@ -165,7 +165,7 @@ public class CVSSCMTest {
         String cvsroot = ":pserver@tortoisecvs.cvs.sourceforge.net:/cvsroot/tortoisecvs";
 
         CVSSCM.DescriptorImpl descriptor = new CVSSCM.DescriptorImpl(false);
-        Matcher matcher = CVSSCM.DescriptorImpl.CVSROOT_PSERVER_PATTERN.matcher(v);
+        Matcher matcher = CVSSCM.DescriptorImpl.CVSROOT_PSERVER_PATTERN.matcher(cvsroot);
         assertFalse(descriptor.isCvsrootValid(cvsroot, matcher));
     }
 
