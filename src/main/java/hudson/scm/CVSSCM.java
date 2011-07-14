@@ -35,13 +35,19 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
+import hudson.model.Items;
+import hudson.model.JobProperty;
 import hudson.model.ModelObject;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.TaskListener;
 import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
 import hudson.remoting.Future;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.cvs.Messages;
+import hudson.scm.util.ParamUtils;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.AtomicFileWriter;
 import hudson.util.ForkOutputStream;
@@ -81,6 +87,7 @@ import java.util.regex.PatternSyntaxException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -203,12 +210,12 @@ public class CVSSCM extends SCM implements Serializable {
      */
     public CVSSCM(String cvsRoot, String allModules, String branch, String cvsRsh, boolean canUseUpdate, boolean legacy,
                   boolean isTag, String excludedRegions) {
-        this(Arrays.asList(new ModuleLocation(cvsRoot, allModules, branch, isTag, null)), cvsRsh, canUseUpdate, legacy,
-            excludedRegions, false);
+        this(Arrays.asList(new ModuleLocationImpl(cvsRoot, allModules, branch, isTag, null)),
+            cvsRsh, canUseUpdate, legacy, excludedRegions, false);
     }
 
     @DataBoundConstructor
-    public CVSSCM(List<ModuleLocation> moduleLocations, String cvsRsh, boolean canUseUpdate, boolean legacy,
+    public CVSSCM(List<ModuleLocationImpl> moduleLocations, String cvsRsh, boolean canUseUpdate, boolean legacy,
                   String excludedRegions, boolean preventLineEndingConversion) {
         moduleLocations = removeInvalidEntries(moduleLocations);
         this.moduleLocations = moduleLocations.toArray(new ModuleLocation[moduleLocations.size()]);
@@ -299,13 +306,17 @@ public class CVSSCM extends SCM implements Serializable {
                             File changelogFile) throws IOException, InterruptedException {
         List<String> changedFiles = null; // files that were affected by update. null this is a check out
         for (ModuleLocation moduleLocation : getModuleLocations()) {
-            if (canUseUpdate && isUpdatable(moduleLocation, ws) == null) {
-                changedFiles = update(moduleLocation, false, launcher, ws, listener, build.getTimestamp().getTime());
+            @SuppressWarnings("unchecked")
+            ModuleLocation parametrizedLocation = new ParametrizedModuleLocationImpl(moduleLocation,
+                build.getBuildVariables());
+            if (canUseUpdate && isUpdatable(parametrizedLocation, ws) == null) {
+                changedFiles = update(parametrizedLocation, false, launcher, ws, listener,
+                    build.getTimestamp().getTime());
                 if (changedFiles == null) {
                     return false;   // failed
                 }
             } else {
-                if (!checkout(moduleLocation, launcher, ws, listener, build.getTimestamp().getTime())) {
+                if (!checkout(parametrizedLocation, launcher, ws, listener, build.getTimestamp().getTime())) {
                     return false;
                 }
             }
@@ -334,7 +345,7 @@ public class CVSSCM extends SCM implements Serializable {
         // to support backward compatibility
         if (ArrayUtils.isEmpty(moduleLocations) && cvsroot != null) {
             return new ModuleLocation[]{
-                new ModuleLocation(cvsroot, module, branch, isTag, null)
+                new ModuleLocationImpl(cvsroot, module, branch, isTag, null)
             };
         }
         return moduleLocations;
@@ -380,18 +391,22 @@ public class CVSSCM extends SCM implements Serializable {
                                                       SCMRevisionState _baseline)
         throws IOException, InterruptedException {
         for (ModuleLocation moduleLocation : getModuleLocations()) {
-            String why = isUpdatable(moduleLocation, workspace);
+            @SuppressWarnings("unchecked")
+            ModuleLocation parametrizedLocation = new ParametrizedModuleLocationImpl(moduleLocation,
+                getBuildVariables(project));
+
+            String why = isUpdatable(parametrizedLocation, workspace);
             if (why != null) {
                 listener.getLogger().println(Messages.CVSSCM_WorkspaceInconsistent(why));
                 return PollingResult.BUILD_NOW;
             }
 
-            List<String> changedFiles = update(moduleLocation, true, launcher, workspace, listener, new Date());
+            List<String> changedFiles = update(parametrizedLocation, true, launcher, workspace, listener, new Date());
 
-           if (changedFiles != null && !changedFiles.isEmpty()) {
+            if (changedFiles != null && !changedFiles.isEmpty()) {
                 Pattern[] patterns = getExcludedRegionsPatterns();
                 if (patterns != null) {
-			        boolean areThereChanges = false;
+                    boolean areThereChanges = false;
                     for (String changedFile : changedFiles) {
                         boolean patternMatched = false;
                         for (Pattern pattern : patterns) {
@@ -405,13 +420,13 @@ public class CVSSCM extends SCM implements Serializable {
                             break;
                         }
                     }
-                    if(areThereChanges){
+                    if (areThereChanges) {
                         return PollingResult.BUILD_NOW;
                     }
                 } else {
                     return PollingResult.BUILD_NOW;
                 }
-           }
+            }
         }
         return PollingResult.NO_CHANGES;
     }
@@ -496,9 +511,8 @@ public class CVSSCM extends SCM implements Serializable {
      * @return List of affected file names, relative to the workspace directory.
      *         Null if the operation failed.
      */
-     List<String> update(ModuleLocation moduleLocation, boolean dryRun, Launcher launcher, FilePath workspace,
-                                TaskListener listener, Date date)
-        throws IOException, InterruptedException {
+    List<String> update(ModuleLocation moduleLocation, boolean dryRun, Launcher launcher, FilePath workspace,
+                        TaskListener listener, Date date) throws IOException, InterruptedException {
         List<String> changedFileNames = new ArrayList<String>();    // file names relative to the workspace
         ArgumentListBuilder cmd = new ArgumentListBuilder();
         cmd.add(getDescriptor().getCvsExeOrDefault(), debug ? "-t" : "-q",
@@ -539,6 +553,7 @@ public class CVSSCM extends SCM implements Serializable {
 
     /**
      * Returns the file name used to archive the build.
+     *
      * @param build {@link AbstractBuild}.
      * @return the file name used to archive the build.
      */
@@ -582,6 +597,32 @@ public class CVSSCM extends SCM implements Serializable {
         }
         buildEnvVars(null/*TODO*/, env);
         return env;
+    }
+
+    /**
+     * Provides additional variables and their values.
+     * <p/>
+     *
+     * @param project {@link AbstractProject}
+     * @return additional variables and their values.
+     */
+    private Map<String, String> getBuildVariables(AbstractProject<?, ?> project) {
+        Map<String, String> params = new HashMap<String, String>();
+        if (project != null && MapUtils.isNotEmpty(project.getProperties())) {
+            for (JobProperty prop : project.getProperties().values()) {
+                if (prop instanceof ParametersDefinitionProperty) {
+                    ParametersDefinitionProperty pp = (ParametersDefinitionProperty) prop;
+                    for (ParameterDefinition parameterDefinition : pp.getParameterDefinitions()) {
+                        ParameterValue parameterValue = parameterDefinition.getDefaultParameterValue();
+                        String value = parameterValue.createVariableResolver(null).resolve(parameterValue.getName());
+                        if (value != null) {
+                            params.put(parameterDefinition.getName(), value);
+                        }
+                    }
+                }
+            }
+        }
+        return params;
     }
 
     /**
@@ -657,7 +698,8 @@ public class CVSSCM extends SCM implements Serializable {
     }
 
     // archive the workspace to support later tagging
-    private void archiveWorkspace(AbstractBuild build, FilePath ws) throws IOException, InterruptedException {
+    @SuppressWarnings("unchecked")
+    private void archiveWorkspace(final AbstractBuild build, FilePath ws) throws IOException, InterruptedException {
 
         File archiveFile = getArchiveFile(build);
         final OutputStream os = new RemoteOutputStream(new FileOutputStream(archiveFile));
@@ -666,10 +708,12 @@ public class CVSSCM extends SCM implements Serializable {
             public Void invoke(File ws, VirtualChannel channel) throws IOException {
                 ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(os));
                 if (flatten) {
-                    archive(ws, getModuleLocations()[0].getModule(), zos, true);
+                    archive(ws, ParamUtils.populateParamValues(getModuleLocations()[0].getModule(),
+                        build.getBuildVariables()), zos, true);
                 } else {
                     for (ModuleLocation moduleLocation : getModuleLocations()) {
-                        String module = moduleLocation.getLocalDir();
+                        String module = ParamUtils.populateParamValues(moduleLocation.getLocalDir(),
+                            build.getBuildVariables());
                         File mf = new File(ws, module);
 
                         if (!mf.exists()) {
@@ -698,8 +742,7 @@ public class CVSSCM extends SCM implements Serializable {
     }
 
     private boolean checkout(ModuleLocation moduleLocation, Launcher launcher, FilePath dir, TaskListener listener,
-                             Date dt)
-        throws IOException, InterruptedException {
+                             Date dt) throws IOException, InterruptedException {
         ArgumentListBuilder cmd = new ArgumentListBuilder();
         cmd.add(getDescriptor().getCvsExeOrDefault(), noQuiet ? null : (debug ? "-t" : "-Q"),
             compression(moduleLocation.getCvsroot()));
@@ -750,7 +793,6 @@ public class CVSSCM extends SCM implements Serializable {
         }
         @SuppressWarnings("unchecked") // StringTokenizer oddly has the wrong type
         final Set<String> moduleNames = populateModuleNames(moduleLocation, moduleLocationPath);
-
 
         for (String moduleName : moduleNames) {
             // capture the output during update
@@ -931,8 +973,11 @@ public class CVSSCM extends SCM implements Serializable {
             final OutputStream out = o = new RemoteOutputStream(new FileOutputStream(changelogFile));
 
             for (ModuleLocation moduleLocation : getModuleLocations()) {
-                ChangeLogResult result = getChangelog(moduleLocation, ws, changedFiles, listener, cvspassFile, cvsExe,
-                    startTime, endTime, out);
+                @SuppressWarnings("unchecked")
+                ModuleLocation parametrizedLocation = new ParametrizedModuleLocationImpl(moduleLocation,
+                    build.getBuildVariables());
+                ChangeLogResult result = getChangelog(parametrizedLocation, ws, changedFiles, listener, cvspassFile,
+                    cvsExe, startTime, endTime, out);
                 if (result != null && result.hadError) {
                     // non-fatal error must have occurred, such as cvs changelog parsing error.s
                     listener.getLogger().print(result.errorOutput);
@@ -969,10 +1014,10 @@ public class CVSSCM extends SCM implements Serializable {
                                          final Date startTime, final Date endTime,
                                          final OutputStream out) throws IOException, InterruptedException {
         FilePath processingPath;
-        if(StringUtils.isNotEmpty(moduleLocation.getLocalDir())){
-           processingPath = new FilePath(ws, moduleLocation.getLocalDir());
-        } else{
-           processingPath = ws;
+        if (StringUtils.isNotEmpty(moduleLocation.getLocalDir())) {
+            processingPath = new FilePath(ws, moduleLocation.getLocalDir());
+        } else {
+            processingPath = ws;
         }
         return processingPath.act(new FileCallable<ChangeLogResult>() {
             public ChangeLogResult invoke(File processingPath, VirtualChannel channel) throws IOException {
@@ -1077,9 +1122,9 @@ public class CVSSCM extends SCM implements Serializable {
         return local ? "-z0" : "-z3";
     }
 
-    private List<ModuleLocation> removeInvalidEntries(List<ModuleLocation> locations) {
-        return newArrayList(filter(locations, new Predicate<ModuleLocation>() {
-            public boolean apply(ModuleLocation location) {
+    private List<ModuleLocationImpl> removeInvalidEntries(List<ModuleLocationImpl> locations) {
+        return newArrayList(filter(locations, new Predicate<ModuleLocationImpl>() {
+            public boolean apply(ModuleLocationImpl location) {
                 return StringUtils.isNotEmpty(location.getCvsroot());
             }
         }));
@@ -1142,6 +1187,7 @@ public class CVSSCM extends SCM implements Serializable {
 
         public DescriptorImpl() {
             super(CVSRepositoryBrowser.class);
+            Items.XSTREAM.alias("hudson.scm.ModuleLocation", ModuleLocationImpl.class);
             load();
         }
 
