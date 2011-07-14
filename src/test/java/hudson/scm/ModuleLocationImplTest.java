@@ -31,9 +31,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
 /**
- * Tests for {@link ModuleLocation}
+ * Tests for {@link ModuleLocationImpl}
  */
-public class ModuleLocationTest {
+public class ModuleLocationImplTest {
 
     private static final String CVSROOT = ":pserver:anonymous:password@10.4.0.50:/var/cvsroot";
     private static final String MODULES = "module1 module2 module\\ name";
@@ -42,7 +42,7 @@ public class ModuleLocationTest {
 
     @Test
     public void testConstructor(){
-        ModuleLocation moduleLocation = new ModuleLocation(CVSROOT, MODULES, BRANCH, false, LOCAL_DIR);
+        ModuleLocation moduleLocation = new ModuleLocationImpl(CVSROOT, MODULES, BRANCH, false, LOCAL_DIR);
         assertEquals(moduleLocation.getCvsroot(), CVSROOT);
         assertEquals(moduleLocation.getModule(), MODULES);
         assertEquals(moduleLocation.getBranch(), BRANCH);
@@ -52,33 +52,33 @@ public class ModuleLocationTest {
 
     @Test
     public void testConstructorEmptyArgs(){
-        ModuleLocation moduleLocation = new ModuleLocation("", "", "", false, "");
+        ModuleLocation moduleLocation = new ModuleLocationImpl("", "", "", false, "");
         assertNull(moduleLocation.getCvsroot());
         assertEquals(moduleLocation.getModule(), "");
         assertNull(moduleLocation.getBranch());
         assertFalse(moduleLocation.isTag());
-        assertEquals(moduleLocation.getLocalDir(), ModuleLocation.DEFAULT_LOCAL_DIR);
+        assertEquals(moduleLocation.getLocalDir(), ModuleLocationImpl.DEFAULT_LOCAL_DIR);
     }
 
     @Test
     public void testConstructorNullArgs(){
-        ModuleLocation moduleLocation = new ModuleLocation(null, null, null, false, null);
+        ModuleLocation moduleLocation = new ModuleLocationImpl(null, null, null, false, null);
         assertNull(moduleLocation.getCvsroot());
         assertNull(moduleLocation.getModule());
         assertNull(moduleLocation.getBranch());
         assertFalse(moduleLocation.isTag());
-        assertEquals(moduleLocation.getLocalDir(), ModuleLocation.DEFAULT_LOCAL_DIR);
+        assertEquals(moduleLocation.getLocalDir(), ModuleLocationImpl.DEFAULT_LOCAL_DIR);
     }
 
     @Test
     public void testConstructorHeadBranch(){
-        ModuleLocation moduleLocation = new ModuleLocation(null, null, ModuleLocation.HEAD_BRANCH, false, null);
+        ModuleLocation moduleLocation = new ModuleLocationImpl(null, null, ModuleLocationImpl.HEAD_BRANCH, false, null);
         assertNull(moduleLocation.getBranch());
     }
 
     @Test
     public void testGetNormalizedModules(){
-        ModuleLocation moduleLocation = new ModuleLocation(null, MODULES, null, false, null);
+        ModuleLocation moduleLocation = new ModuleLocationImpl(null, MODULES, null, false, null);
         String[] normalizedModules = moduleLocation.getNormalizedModules();
         assertEquals(normalizedModules.length, 3);
         assertEquals(normalizedModules[0], "module1");
