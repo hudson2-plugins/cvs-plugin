@@ -53,7 +53,8 @@ public class CVSSCMTest {
 
     @Test
     public void testGetModuleLocations() {
-        CVSSCM scm = new CVSSCM(Arrays.asList(new ModuleLocation(CVSROOT, MODULES, BRANCH, false, LOCAL_DIR)),
+        CVSSCM scm = new CVSSCM(Arrays.asList(
+            new ModuleLocationImpl(CVSROOT, MODULES, BRANCH, false, LOCAL_DIR)),
             null, true, false, null, false);
         //there are 3 modules
         assertFalse(scm.isFlatten());

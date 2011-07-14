@@ -264,8 +264,11 @@ public class TagAction extends AbstractScmTagAction implements Describable<TagAc
             // run cvs tag command
             listener.getLogger().println(hudson.scm.cvs.Messages.CVSSCM_TaggingWorkspace());
             for (ModuleLocation moduleLocation : scmInstance.getModuleLocations()) {
-                for (String module : moduleLocation.getNormalizedModules()) {
-                    if (!createTag(tagName, listener, destdir, moduleLocation.getLocalDir(), module,
+                @SuppressWarnings("unchecked")
+                ModuleLocation parametrizedLocation = new ParametrizedModuleLocationImpl(moduleLocation,
+                    build.getBuildVariables());
+                for (String module : parametrizedLocation.getNormalizedModules()) {
+                    if (!createTag(tagName, listener, destdir, parametrizedLocation.getLocalDir(), module,
                         scmInstance.isFlatten())) {
                         return;
                     }
