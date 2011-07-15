@@ -375,10 +375,11 @@ public class CVSSCM extends SCM implements Serializable {
         if (cvsRsh != null) {
             env.put("CVS_RSH", cvsRsh);
         }
-//TODO verify if this is required
-//        if (branch != null) {
-//            env.put("CVS_BRANCH", branch);
-//        }
+        ModuleLocation[] locations = getModuleLocations();
+        if (!ArrayUtils.isEmpty(locations) && locations.length == 1
+            && locations[0] != null && locations[0].getBranch() != null) {
+            env.put("CVS_BRANCH", locations[0].getBranch());
+        }
         String cvspass = getDescriptor().getCvspassFile();
         if (cvspass.length() != 0) {
             env.put("CVS_PASSFILE", cvspass);
