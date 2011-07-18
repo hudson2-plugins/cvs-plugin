@@ -35,7 +35,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
-import hudson.model.Items;
 import hudson.model.JobProperty;
 import hudson.model.ModelObject;
 import hudson.model.ParameterDefinition;
@@ -1188,7 +1187,6 @@ public class CVSSCM extends SCM implements Serializable {
 
         public DescriptorImpl() {
             super(CVSRepositoryBrowser.class);
-            Items.XSTREAM.alias("hudson.scm.ModuleLocation", ModuleLocationImpl.class);
             load();
         }
 
