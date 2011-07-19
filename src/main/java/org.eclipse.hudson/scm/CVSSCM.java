@@ -42,7 +42,6 @@ import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.TaskListener;
-import org.eclipse.hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
 import hudson.remoting.Future;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
@@ -52,7 +51,6 @@ import hudson.scm.RepositoryBrowsers;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMRevisionState;
-import org.eclipse.hudson.scm.util.ParamUtils;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.AtomicFileWriter;
 import hudson.util.ForkOutputStream;
@@ -100,6 +98,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
+import org.eclipse.hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
+import org.eclipse.hudson.scm.util.ParamUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -170,6 +170,14 @@ public class CVSSCM extends SCM implements Serializable {
      * See http://www.nabble.com/Problem-with-polling-CVS%2C-from-version-1.181-tt15799926.html for the user report.
      */
     private static final Pattern PSERVER_CVSROOT_WITH_PASSWORD = Pattern.compile("(:pserver:[^@:]+):[^@:]+(@.+)");
+
+    /**
+     * Static block to save backward compatibility with old configuration.
+     */
+    static {
+        Items.XSTREAM.alias("hudson.scm.CVSSCM", CVSSCM.class);
+        Items.XSTREAM.alias("hudson.scm.ModuleLocationImpl", ModuleLocationImpl.class);
+    }
 
     private String cvsRsh;
 
@@ -1193,8 +1201,6 @@ public class CVSSCM extends SCM implements Serializable {
 
         public DescriptorImpl() {
             super(CVSRepositoryBrowser.class);
-            Items.XSTREAM.alias("hudson.scm.CVSSCM", CVSSCM.class);
-            Items.XSTREAM.alias("hudson.scm.ModuleLocationImpl", ModuleLocationImpl.class);
             load();
         }
 
