@@ -25,9 +25,7 @@ package org.eclipse.hudson.scm;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.eclipse.hudson.scm.ModuleLocation;
-import org.eclipse.hudson.scm.ModuleLocationImpl;
-import org.eclipse.hudson.scm.ParametrizedModuleLocationImpl;
+
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;

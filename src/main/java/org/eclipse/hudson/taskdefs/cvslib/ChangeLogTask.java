@@ -14,9 +14,9 @@
  *  limitations under the License.
  *
  */
-package org.eclipse.hudson.org.apache.tools.ant.taskdefs.cvslib;
+package org.eclipse.hudson.taskdefs.cvslib;
 
-import org.eclipse.hudson.org.apache.tools.ant.taskdefs.AbstractCvsTask;
+import org.eclipse.hudson.taskdefs.AbstractCvsTask;
 import hudson.util.ForkOutputStream;
 import java.io.File;
 import java.io.FileInputStream;

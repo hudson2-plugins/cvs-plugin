@@ -98,7 +98,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
-import org.eclipse.hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
+import org.eclipse.hudson.taskdefs.cvslib.ChangeLogTask;
 import org.eclipse.hudson.scm.util.ParamUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;

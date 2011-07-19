@@ -28,6 +28,10 @@ import hudson.XmlFile;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+
+import hudson.matrix.MatrixProject;
+import hudson.model.FreeStyleProject;
+import hudson.model.Items;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 
@@ -41,6 +45,8 @@ public abstract class BaseLegacyConverterTest {
         //Create target config file in order to perform marshall operation
         targetConfigFile = new File(sourceConfigFile.getParent(), "target_" + getResourceName());
         FileUtils.copyFile(sourceConfigFile, targetConfigFile);
+        Items.XSTREAM.alias("project",FreeStyleProject.class);
+        Items.XSTREAM.alias("matrix-project",MatrixProject.class);
     }
 
     protected abstract String getResourceName();

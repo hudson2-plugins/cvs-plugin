@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.eclipse.hudson.org.apache.tools.ant.taskdefs.cvslib;
+package org.eclipse.hudson.taskdefs.cvslib;
 
 import org.apache.tools.ant.taskdefs.LogOutputStream;
 
