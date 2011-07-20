@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.eclipse.hudson.org.apache.tools.ant.taskdefs.cvslib;
+package org.eclipse.hudson.taskdefs.cvslib;
 // patched to work around http://issues.apache.org/bugzilla/show_bug.cgi?id=38583
 
 import java.io.File;

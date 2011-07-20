@@ -15,7 +15,7 @@
  *
  */
 
-package org.eclipse.hudson.org.apache.tools.ant.taskdefs;
+package org.eclipse.hudson.taskdefs;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;

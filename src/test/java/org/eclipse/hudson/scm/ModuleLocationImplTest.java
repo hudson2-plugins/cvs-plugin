@@ -24,8 +24,6 @@
  */
 package org.eclipse.hudson.scm;
 
-import org.eclipse.hudson.scm.ModuleLocation;
-import org.eclipse.hudson.scm.ModuleLocationImpl;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

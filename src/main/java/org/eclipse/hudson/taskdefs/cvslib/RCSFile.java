@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.eclipse.hudson.org.apache.tools.ant.taskdefs.cvslib;
+package org.eclipse.hudson.taskdefs.cvslib;
 
 /**
  * Represents a RCS File change.

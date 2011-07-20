@@ -33,9 +33,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
-import org.eclipse.hudson.scm.CVSSCM;
-import org.eclipse.hudson.scm.ModuleLocation;
-import org.eclipse.hudson.scm.ModuleLocationImpl;
+
 import org.junit.Test;
 
 import static com.google.common.collect.Lists.newArrayList;

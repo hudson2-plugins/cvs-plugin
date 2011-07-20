@@ -25,13 +25,14 @@ package org.eclipse.hudson.scm.util;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.eclipse.hudson.scm.util.ParamUtils;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
 
 /**
- * Test for {@link ParamUtils}
+ * Test for {@link org.eclipse.hudson.scm.util.ParamUtils}
  */
 public class ParamUtilsTest {
 
