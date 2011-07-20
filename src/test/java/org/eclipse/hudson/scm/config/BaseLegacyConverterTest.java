@@ -38,6 +38,12 @@ import org.junit.Before;
 public abstract class BaseLegacyConverterTest {
     private File sourceConfigFile;
     private File targetConfigFile;
+    public static final com.thoughtworks.xstream.XStream XSTREAM = Items.XSTREAM;
+
+    static {
+        XSTREAM.alias("project",FreeStyleProject.class);
+        XSTREAM.alias("matrix-project",MatrixProject.class);
+    }
 
     @Before
     public void setUp() throws URISyntaxException, IOException {
@@ -45,8 +51,6 @@ public abstract class BaseLegacyConverterTest {
         //Create target config file in order to perform marshall operation
         targetConfigFile = new File(sourceConfigFile.getParent(), "target_" + getResourceName());
         FileUtils.copyFile(sourceConfigFile, targetConfigFile);
-        Items.XSTREAM.alias("project",FreeStyleProject.class);
-        Items.XSTREAM.alias("matrix-project",MatrixProject.class);
     }
 
     protected abstract String getResourceName();

@@ -24,7 +24,6 @@
 package org.eclipse.hudson.scm.config;
 
 import hudson.model.FreeStyleProject;
-import hudson.model.Items;
 import org.eclipse.hudson.scm.CVSSCM;
 import org.junit.Test;
 
@@ -42,7 +41,7 @@ public class Hudson201ConfigTest extends BaseLegacyConverterTest {
 
     @Test
     public void testLegacyUnmarshall() throws Exception {
-        FreeStyleProject project = (FreeStyleProject) getSourceConfigFile(Items.XSTREAM).read();
+        FreeStyleProject project = (FreeStyleProject) getSourceConfigFile(XSTREAM).read();
         CVSSCM scm = (CVSSCM) project.getScm();
         assertNotNull(scm);
         assertEquals(scm.getModuleLocations().length, 1);
@@ -60,10 +59,10 @@ public class Hudson201ConfigTest extends BaseLegacyConverterTest {
     @Test
     public void testMarshall() throws Exception {
         //read object from config
-        Object item = getSourceConfigFile(Items.XSTREAM).read();
+        Object item = getSourceConfigFile(XSTREAM).read();
         //save to new config file
-        getTargetConfigFile(Items.XSTREAM).write(item);
-        getTargetConfigFile(Items.XSTREAM).read();
+        getTargetConfigFile(XSTREAM).write(item);
+        getTargetConfigFile(XSTREAM).read();
     }
 
 }
