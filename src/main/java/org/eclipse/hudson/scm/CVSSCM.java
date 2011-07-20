@@ -31,10 +31,12 @@ import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.Util;
+import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
+import hudson.model.Items;
 import hudson.model.JobProperty;
 import hudson.model.ModelObject;
 import hudson.model.ParameterDefinition;
@@ -170,11 +172,16 @@ public class CVSSCM extends SCM implements Serializable {
      */
     private static final Pattern PSERVER_CVSROOT_WITH_PASSWORD = Pattern.compile("(:pserver:[^@:]+):[^@:]+(@.+)");
 
+    private static final String HUDSON_SCM_CVSSCM_ALIAS_NAME = "hudson.scm.CVSSCM";
+    private static final String HUDSON_SCM_CVSSCM_DESCRIPTOR_ALIAS_NAME = HUDSON_SCM_CVSSCM_ALIAS_NAME
+        + "$DescriptorImpl";
+
     /**
      * Static block to save backward compatibility with old configuration.
      */
     static {
-        Items.XSTREAM.alias("hudson.scm.CVSSCM", CVSSCM.class);
+        Items.XSTREAM.alias(HUDSON_SCM_CVSSCM_ALIAS_NAME, CVSSCM.class);
+        XmlFile.DEFAULT_XSTREAM.alias(HUDSON_SCM_CVSSCM_DESCRIPTOR_ALIAS_NAME, DescriptorImpl.class);
         Items.XSTREAM.alias("hudson.scm.ModuleLocationImpl", ModuleLocationImpl.class);
     }
 
@@ -1201,6 +1208,17 @@ public class CVSSCM extends SCM implements Serializable {
         public DescriptorImpl() {
             super(CVSRepositoryBrowser.class);
             load();
+        }
+
+        /**
+         * Returns descriptor id.
+         * We return old class name to save backward compatibility of global configuration.
+         *
+         * @return descriptor id.
+         */
+        @Override
+        public String getId() {
+            return HUDSON_SCM_CVSSCM_ALIAS_NAME;
         }
 
         /**
