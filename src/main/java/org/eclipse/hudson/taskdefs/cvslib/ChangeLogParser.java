@@ -1,3 +1,17 @@
+/*******************************************************************************
+ *
+ * Copyright (c) 2010, CloudBees, Inc.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *
+ * Kohsuke Kawaguchi
+ *
+ *******************************************************************************/
 /*
  * Copyright  2002-2004 The Apache Software Foundation
  *
@@ -14,6 +28,7 @@
  *  limitations under the License.
  *
  */
+ //TODO replace it with Apache Ant 1.8.2 library
 package org.eclipse.hudson.taskdefs.cvslib;
 // patched to work around http://issues.apache.org/bugzilla/show_bug.cgi?id=38583
 
@@ -40,6 +55,7 @@ import org.apache.tools.ant.Project;
  *
  * @version $Revision: 10722 $ $Date: 2008-07-08 16:39:20 -0700 (Tue, 08 Jul 2008) $
  */
+
 class ChangeLogParser {
     //private static final int GET_ENTRY = 0;
     private static final int GET_FILE = 1;
