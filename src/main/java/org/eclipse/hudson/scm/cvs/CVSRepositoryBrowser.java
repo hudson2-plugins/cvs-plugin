@@ -12,9 +12,9 @@
  * Kohsuke Kawaguchi
  *
  *******************************************************************************/
-package org.eclipse.hudson.scm;
+package org.eclipse.hudson.scm.cvs;
 
-import org.eclipse.hudson.scm.CVSChangeLogSet.CVSChangeLog;
+import org.eclipse.hudson.scm.cvs.CVSChangeLogSet.CVSChangeLog;
 
 import hudson.scm.RepositoryBrowser;
 import java.io.IOException;

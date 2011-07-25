@@ -12,7 +12,7 @@
  * Kohsuke Kawaguchi, Anton Kozak
  *
  *******************************************************************************/
-package org.eclipse.hudson.scm;
+package org.eclipse.hudson.scm.cvs;
 
 import hudson.FilePath;
 import hudson.Launcher;
@@ -24,6 +24,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 
+import org.eclipse.hudson.scm.cvs.CVSSCM;
+import org.eclipse.hudson.scm.cvs.ModuleLocation;
+import org.eclipse.hudson.scm.cvs.ModuleLocationImpl;
 import org.junit.Test;
 
 import static com.google.common.collect.Lists.newArrayList;

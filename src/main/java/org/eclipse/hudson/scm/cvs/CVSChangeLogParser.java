@@ -12,7 +12,7 @@
  * Kohsuke Kawaguchi
  *
  *******************************************************************************/
-package org.eclipse.hudson.scm;
+package org.eclipse.hudson.scm.cvs;
 
 import hudson.model.AbstractBuild;
 import hudson.scm.ChangeLogParser;

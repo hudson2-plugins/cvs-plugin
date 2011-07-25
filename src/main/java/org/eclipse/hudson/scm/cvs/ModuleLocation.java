@@ -12,7 +12,7 @@
  * Anton Kozak
  *
  *******************************************************************************/
-package org.eclipse.hudson.scm;
+package org.eclipse.hudson.scm.cvs;
 
 import java.io.Serializable;
 

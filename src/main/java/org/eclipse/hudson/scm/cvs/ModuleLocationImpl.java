@@ -13,9 +13,9 @@
  *
  *******************************************************************************/
 
-package org.eclipse.hudson.scm;
+package org.eclipse.hudson.scm.cvs;
 
-import org.eclipse.hudson.scm.util.ParamUtils;
+import org.eclipse.hudson.scm.cvs.util.ParamUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;

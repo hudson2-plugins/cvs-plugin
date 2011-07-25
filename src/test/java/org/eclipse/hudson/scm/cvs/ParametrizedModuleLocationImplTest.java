@@ -12,11 +12,14 @@
  * Anton Kozak
  *
  *******************************************************************************/
-package org.eclipse.hudson.scm;
+package org.eclipse.hudson.scm.cvs;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.hudson.scm.cvs.ModuleLocation;
+import org.eclipse.hudson.scm.cvs.ModuleLocationImpl;
+import org.eclipse.hudson.scm.cvs.ParametrizedModuleLocationImpl;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;

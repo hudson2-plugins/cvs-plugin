@@ -12,7 +12,7 @@
  * Nikita Levyankov
  *
  *******************************************************************************/
-package org.eclipse.hudson.scm.config;
+package org.eclipse.hudson.scm.cvs.config;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
@@ -24,7 +24,7 @@ import hudson.matrix.MatrixProject;
 import hudson.model.FreeStyleProject;
 import hudson.model.Items;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.hudson.scm.CVSSCM;
+import org.eclipse.hudson.scm.cvs.CVSSCM;
 import org.junit.Before;
 
 public abstract class BaseLegacyConverterTest {

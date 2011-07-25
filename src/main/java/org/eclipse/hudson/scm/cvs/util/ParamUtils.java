@@ -12,7 +12,7 @@
  * Kohsuke Kawaguchi, Anton Kozak
  *
  *******************************************************************************/
-package org.eclipse.hudson.scm.util;
+package org.eclipse.hudson.scm.cvs.util;
 
 import java.util.ArrayList;
 import java.util.List;

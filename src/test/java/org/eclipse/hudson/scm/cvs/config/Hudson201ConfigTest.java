@@ -12,10 +12,10 @@
  * Anton Kozak
  *
  *******************************************************************************/
-package org.eclipse.hudson.scm.config;
+package org.eclipse.hudson.scm.cvs.config;
 
 import hudson.model.FreeStyleProject;
-import org.eclipse.hudson.scm.CVSSCM;
+import org.eclipse.hudson.scm.cvs.CVSSCM;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -23,11 +23,11 @@ import static org.junit.Assert.*;
 /**
  * Test to verify backward compatibility with Hudson 2.1.0 configuration
  */
-public class Hudson210ConfigTest extends BaseLegacyConverterTest {
+public class Hudson201ConfigTest extends BaseLegacyConverterTest {
 
     @Override
     protected String getResourceName() {
-        return "config-2.1.0.xml";
+        return "config-2.0.1.xml";
     }
 
     @Test
@@ -45,7 +45,6 @@ public class Hudson210ConfigTest extends BaseLegacyConverterTest {
         assertTrue(scm.isLegacy());
         assertFalse(scm.isFlatten());
         assertEquals(scm.getExcludedRegions(), "");
-
     }
 
     @Test

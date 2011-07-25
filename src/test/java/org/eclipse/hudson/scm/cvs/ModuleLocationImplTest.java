@@ -12,8 +12,10 @@
  * Kohsuke Kawaguchi, Anton Kozak
  *
  *******************************************************************************/
-package org.eclipse.hudson.scm;
+package org.eclipse.hudson.scm.cvs;
 
+import org.eclipse.hudson.scm.cvs.ModuleLocation;
+import org.eclipse.hudson.scm.cvs.ModuleLocationImpl;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

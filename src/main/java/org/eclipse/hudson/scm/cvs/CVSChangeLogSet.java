@@ -12,11 +12,11 @@
  * Kohsuke Kawaguchi, Nikita Levyankov, Anton Kozak
  *
  *******************************************************************************/
-package org.eclipse.hudson.scm;
+package org.eclipse.hudson.scm.cvs;
 
 import hudson.model.AbstractBuild;
 import hudson.model.User;
-import org.eclipse.hudson.scm.CVSChangeLogSet.CVSChangeLog;
+import org.eclipse.hudson.scm.cvs.CVSChangeLogSet.CVSChangeLog;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.EditType;
 import hudson.scm.SCM;

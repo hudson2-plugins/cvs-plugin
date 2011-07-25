@@ -12,18 +12,17 @@
  * Anton Kozak
  *
  *******************************************************************************/
-package org.eclipse.hudson.scm.util;
+package org.eclipse.hudson.scm.cvs.util;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.hudson.scm.util.ParamUtils;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
 
 /**
- * Test for {@link org.eclipse.hudson.scm.util.ParamUtils}
+ * Test for {@link org.eclipse.hudson.scm.cvs.util.ParamUtils}
  */
 public class ParamUtilsTest {
 

@@ -12,16 +12,16 @@
  * Kohsuke Kawaguchi
  *
  *******************************************************************************/
-package org.eclipse.hudson.scm.browsers;
+package org.eclipse.hudson.scm.cvs.browsers;
 
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
-import org.eclipse.hudson.scm.CVSChangeLogSet;
-import org.eclipse.hudson.scm.CVSChangeLogSet.File;
-import org.eclipse.hudson.scm.CVSChangeLogSet.Revision;
-import org.eclipse.hudson.scm.CVSRepositoryBrowser;
+import org.eclipse.hudson.scm.cvs.CVSChangeLogSet;
+import org.eclipse.hudson.scm.cvs.CVSChangeLogSet.File;
+import org.eclipse.hudson.scm.cvs.CVSChangeLogSet.Revision;
+import org.eclipse.hudson.scm.cvs.CVSRepositoryBrowser;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.browsers.QueryBuilder;
 import hudson.util.FormValidation;

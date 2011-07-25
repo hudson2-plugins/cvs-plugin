@@ -12,7 +12,7 @@
  * Kohsuke Kawaguchi, Jene Jasper, Stephen Connolly, Anton Kozak
  *
  *******************************************************************************/
-package org.eclipse.hudson.scm;
+package org.eclipse.hudson.scm.cvs;
 
 import com.google.common.base.Predicate;
 import hudson.EnvVars;
@@ -91,7 +91,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
 import org.eclipse.hudson.taskdefs.cvslib.ChangeLogTask;
-import org.eclipse.hudson.scm.util.ParamUtils;
+import org.eclipse.hudson.scm.cvs.util.ParamUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -1475,11 +1475,11 @@ public class CVSSCM extends SCM implements Serializable {
     }
 
     /**
-     * @see org.eclipse.hudson.scm.TagAction
+     * @see org.eclipse.hudson.scm.cvs.TagAction
      * @deprecated this class was left for backward compatibility.
      */
     @ExportedBean
-    public final class TagAction extends org.eclipse.hudson.scm.TagAction {
+    public final class TagAction extends org.eclipse.hudson.scm.cvs.TagAction {
         public TagAction(AbstractBuild build) {
             super(build, CVSSCM.this);
         }

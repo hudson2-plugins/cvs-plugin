@@ -1,4 +1,4 @@
-package org.eclipse.hudson.scm;
+package org.eclipse.hudson.scm.cvs;
 
 import hudson.Plugin;
 import java.io.IOException;

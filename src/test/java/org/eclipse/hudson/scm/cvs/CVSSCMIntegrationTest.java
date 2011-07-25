@@ -12,12 +12,13 @@
  * Kohsuke Kawaguchi, Anton Kozak
  *
  *******************************************************************************/
-package org.eclipse.hudson.scm;
+package org.eclipse.hudson.scm.cvs;
 
 import hudson.model.FreeStyleProject;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Arrays;
+import org.eclipse.hudson.scm.cvs.CVSSCM;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -72,7 +73,7 @@ public class CVSSCMIntegrationTest extends HudsonTestCase {
         p.setScm(scm);
         Field repositoryBrowser = scm.getClass().getDeclaredField("repositoryBrowser");
         repositoryBrowser.setAccessible(true);
-        repositoryBrowser.set(scm, new org.eclipse.hudson.scm.browsers.ViewCVS(new URL("http://nowhere.net/viewcvs/")));
+        repositoryBrowser.set(scm, new org.eclipse.hudson.scm.cvs.browsers.ViewCVS(new URL("http://nowhere.net/viewcvs/")));
         new WebClient().goTo(p.getUrl()+"api/xml", "application/xml");
         new WebClient().goTo(p.getUrl() + "api/xml?depth=999", "application/xml");
     }
