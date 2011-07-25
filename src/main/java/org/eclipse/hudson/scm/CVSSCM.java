@@ -167,15 +167,6 @@ public class CVSSCM extends SCM implements Serializable {
     private static final String HUDSON_SCM_CVSSCM_DESCRIPTOR_ALIAS_NAME = HUDSON_SCM_CVSSCM_ALIAS_NAME
         + "$DescriptorImpl";
 
-    /**
-     * Static block to save backward compatibility with old configuration.
-     */
-    static {
-        Items.XSTREAM.alias(HUDSON_SCM_CVSSCM_ALIAS_NAME, CVSSCM.class);
-        XmlFile.DEFAULT_XSTREAM.alias(HUDSON_SCM_CVSSCM_DESCRIPTOR_ALIAS_NAME, DescriptorImpl.class);
-        Items.XSTREAM.alias("hudson.scm.ModuleLocationImpl", ModuleLocationImpl.class);
-    }
-
     private String cvsRsh;
 
     private boolean canUseUpdate;
@@ -235,6 +226,15 @@ public class CVSSCM extends SCM implements Serializable {
             && moduleLocations.get(0).getNormalizedModules().length == 1;
         this.excludedRegions = excludedRegions;
         this.preventLineEndingConversion = preventLineEndingConversion;
+    }
+
+    /**
+     * Initializes aliases to save backward compatibility with old configuration.
+     */
+    public static void initialize() {
+        Items.XSTREAM.alias(HUDSON_SCM_CVSSCM_ALIAS_NAME, CVSSCM.class);
+        XmlFile.DEFAULT_XSTREAM.alias(HUDSON_SCM_CVSSCM_DESCRIPTOR_ALIAS_NAME, DescriptorImpl.class);
+        Items.XSTREAM.alias("hudson.scm.ModuleLocationImpl", ModuleLocationImpl.class);
     }
 
     @Override
