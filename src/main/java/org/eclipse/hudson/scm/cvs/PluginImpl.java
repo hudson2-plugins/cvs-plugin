@@ -1,8 +1,3 @@
-package org.eclipse.hudson.scm.cvs;
-
-import hudson.Plugin;
-import java.io.IOException;
-
 /*******************************************************************************
  *
  * Copyright (c) 2011 Oracle Corporation.
@@ -17,6 +12,10 @@ import java.io.IOException;
  * Anton Kozak
  *
  *******************************************************************************/
+package org.eclipse.hudson.scm.cvs;
+
+import hudson.Plugin;
+import java.io.IOException;
 
 /**
  * Plugin entry point.
