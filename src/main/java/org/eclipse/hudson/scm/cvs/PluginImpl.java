@@ -26,8 +26,7 @@ import java.io.IOException;
 public class PluginImpl extends Plugin {
 
     @Override
-    public void postInitialize() throws IOException {
+    public void start() throws IOException {
         CVSSCM.initialize();
     }
-
 }
