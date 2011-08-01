@@ -46,7 +46,6 @@ import hudson.remoting.Future;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.cvs.Messages;
-import hudson.scm.util.ParamUtils;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.AtomicFileWriter;
 import hudson.util.ForkOutputStream;
@@ -708,13 +707,10 @@ public class CVSSCM extends SCM implements Serializable {
             public Void invoke(File ws, VirtualChannel channel) throws IOException {
                 ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(os));
                 if (flatten) {
-                    archive(ws, ParamUtils.populateParamValues(getModuleLocations()[0].getModule(),
-                        build.getBuildVariables()), zos, true);
+                    archive(ws, getModuleLocations()[0].getModule(), zos, true);
                 } else {
                     for (ModuleLocation moduleLocation : getModuleLocations()) {
-                        String module = ParamUtils.populateParamValues(moduleLocation.getLocalDir(),
-                            build.getBuildVariables());
-                        File mf = new File(ws, module);
+                        File mf = new File(ws, moduleLocation.getLocalDir());
 
                         if (!mf.exists()) {
                             // directory doesn't exist. This happens if a directory that was checked out
