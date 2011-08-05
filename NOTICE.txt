@@ -1,0 +1,25 @@
+==============================================================
+Hudson Continuous Integration Server
+Copyright 2004-2011 Oracle Corporation ==============================================================
+
+The Hudson Continuous Integration Server is Copyright Oracle Corporation
+unless otherwise noted. It is licensed under eclipse 1.0 license.  
+
+The following classes used were sourced from the Apache
+Software Foundation and is distributed under the apache 2.0
+license.
+
+AbstractCvsTask.java
+ChangeLogParser.java
+ChangeLogTask.java
+ChangeLogWriter.java
+CVSEntry.java
+CvsUser.java
+RCSFile.java
+RedirectingOutputStream.java
+RedirectingStreamHandler.java
+
+
+
+
+
