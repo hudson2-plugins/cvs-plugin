@@ -15,6 +15,7 @@
 package org.eclipse.hudson.scm.cvs;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -91,7 +92,6 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
 import org.eclipse.hudson.taskdefs.cvslib.ChangeLogTask;
-import org.eclipse.hudson.scm.cvs.util.ParamUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -100,10 +100,10 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static hudson.Util.*;
+import static hudson.Util.fixEmpty;
+import static hudson.Util.fixEmptyAndTrim;
+import static hudson.Util.fixNull;
 import static java.util.logging.Level.INFO;
-import static org.eclipse.hudson.scm.cvs.Messages.*;
 
 /**
  * CVS.
@@ -408,7 +408,7 @@ public class CVSSCM extends SCM implements Serializable {
 
             String why = isUpdatable(parametrizedLocation, workspace);
             if (why != null) {
-                listener.getLogger().println(CVSSCM_WorkspaceInconsistent(why));
+                listener.getLogger().println(Messages.CVSSCM_WorkspaceInconsistent(why));
                 return PollingResult.BUILD_NOW;
             }
 
@@ -719,13 +719,10 @@ public class CVSSCM extends SCM implements Serializable {
             public Void invoke(File ws, VirtualChannel channel) throws IOException {
                 ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(os));
                 if (flatten) {
-                    archive(ws, ParamUtils.populateParamValues(getModuleLocations()[0].getModule(),
-                        build.getBuildVariables()), zos, true);
+                    archive(ws, getModuleLocations()[0].getModule(), zos, true);
                 } else {
                     for (ModuleLocation moduleLocation : getModuleLocations()) {
-                        String module = ParamUtils.populateParamValues(moduleLocation.getLocalDir(),
-                            build.getBuildVariables());
-                        File mf = new File(ws, module);
+                        File mf = new File(ws, moduleLocation.getLocalDir());
 
                         if (!mf.exists()) {
                             // directory doesn't exist. This happens if a directory that was checked out
@@ -1134,11 +1131,12 @@ public class CVSSCM extends SCM implements Serializable {
     }
 
     private List<ModuleLocationImpl> removeInvalidEntries(List<ModuleLocationImpl> locations) {
-        return newArrayList(com.google.common.collect.Iterables.filter(locations, new Predicate<ModuleLocationImpl>() {
-            public boolean apply(ModuleLocationImpl location) {
-                return StringUtils.isNotEmpty(location.getCvsroot());
-            }
-        }));
+        return Lists.newArrayList(
+            com.google.common.collect.Iterables.filter(locations, new Predicate<ModuleLocationImpl>() {
+                public boolean apply(ModuleLocationImpl location) {
+                    return StringUtils.isNotEmpty(location.getCvsroot());
+                }
+            }));
 
     }
 
@@ -1338,7 +1336,7 @@ public class CVSSCM extends SCM implements Serializable {
             String v = fixNull(value);
 
             if (v.equals("HEAD")) {
-                return FormValidation.error(CVSSCM_HeadIsNotBranch());
+                return FormValidation.error(Messages.CVSSCM_HeadIsNotBranch());
             }
 
             return FormValidation.ok();
@@ -1352,17 +1350,17 @@ public class CVSSCM extends SCM implements Serializable {
         public FormValidation doCheckCvsroot(@QueryParameter String value) throws IOException {
             String v = StringUtils.trim(StringUtils.defaultIfEmpty(value, null));
             if (v == null) {
-                return FormValidation.error(CVSSCM_MissingCvsroot());
+                return FormValidation.error(Messages.CVSSCM_MissingCvsroot());
             }
 
             Matcher matcher = CVSROOT_PSERVER_PATTERN.matcher(v);
 
             if (!isCvsrootValid(v, matcher)) {
-                return FormValidation.error(CVSSCM_InvalidCvsroot());
+                return FormValidation.error(Messages.CVSSCM_InvalidCvsroot());
             }
 
             if (!isPasswordSet(v, matcher)) {
-                return FormValidation.error(CVSSCM_PasswordNotSet());
+                return FormValidation.error(Messages.CVSSCM_PasswordNotSet());
             }
             return FormValidation.ok();
         }
