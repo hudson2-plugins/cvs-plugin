@@ -717,18 +717,8 @@ public class CVSSCM extends SCM implements Serializable {
                             // didn't include any file.
                             continue;
                         }
-
-                        if (!mf.isDirectory()) {
-                            // this module is just a file, say "foo/bar.txt".
-                            // to record "foo/CVS/*", we need to start by archiving "foo".
-                            int idx = module.lastIndexOf('/');
-                            if (idx == -1) {
-                                throw new Error("Archiving error: module=" + module);
-                            }
-                            module = module.substring(0, idx);
-                            mf = mf.getParentFile();
-                        }
-                        archive(mf, module, zos, true);
+                        archive(mf, ModuleLocationImpl.DEFAULT_LOCAL_DIR.equals(moduleLocation.getLocalDir())
+                                ? ModuleLocationImpl.TAGGING_SUBDIR : moduleLocation.getLocalDir(), zos, true);
                     }
                 }
                 zos.close();
