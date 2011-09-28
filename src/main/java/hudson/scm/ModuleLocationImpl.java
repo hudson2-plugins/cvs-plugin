@@ -21,6 +21,8 @@ public final class ModuleLocationImpl implements ModuleLocation {
     public static final String HEAD_BRANCH = "HEAD";
     static final String DEFAULT_LOCAL_DIR = ".";
 
+    static final String TAGGING_SUBDIR = "TAGGING_SUBDIR";
+
     /**
      * CVSSCM connection string, like ":pserver:me@host:/cvs"
      */
