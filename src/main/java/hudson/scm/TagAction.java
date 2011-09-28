@@ -268,7 +268,10 @@ public class TagAction extends AbstractScmTagAction implements Describable<TagAc
                 ModuleLocation parametrizedLocation = new ParametrizedModuleLocationImpl(moduleLocation,
                     build.getBuildVariables());
                 for (String module : parametrizedLocation.getNormalizedModules()) {
-                    if (!createTag(tagName, listener, destdir, parametrizedLocation.getLocalDir(), module,
+                    String moduleLocalDir =
+                        ModuleLocationImpl.DEFAULT_LOCAL_DIR.equals(parametrizedLocation.getLocalDir())
+                            ? ModuleLocationImpl.TAGGING_SUBDIR : parametrizedLocation.getLocalDir();
+                    if (!createTag(tagName, listener, destdir, moduleLocalDir, module,
                         scmInstance.isFlatten())) {
                         return;
                     }
