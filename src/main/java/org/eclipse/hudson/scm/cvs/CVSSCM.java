@@ -120,7 +120,7 @@ import static org.eclipse.hudson.scm.cvs.Messages.*;
  */
 public class CVSSCM extends SCM implements Serializable {
     /**
-     * Temporary hack for assisting trouble-shooting.
+     * Temporary workaround for assisting trouble-shooting.
      * <p/>
      * <p/>
      * Setting this property to true would cause <tt>cvs log</tt> to dump a lot of messages.
