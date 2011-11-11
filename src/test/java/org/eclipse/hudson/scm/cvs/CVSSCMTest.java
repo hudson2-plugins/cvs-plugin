@@ -16,23 +16,41 @@ package org.eclipse.hudson.scm.cvs;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.Action;
+import hudson.model.BuildListener;
+import hudson.model.StreamBuildListener;
 import hudson.model.TaskListener;
 import hudson.scm.PollingResult;
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
+import org.easymock.EasyMock;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.easymock.EasyMock.expect;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+import static org.powermock.api.easymock.PowerMock.*;
+import static org.powermock.api.easymock.PowerMock.verify;
 
 /**
  * @author Anton Kozak
  */
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({CVSSCM.class, AbstractBuild.class, BuildListener.class, FilePath.class})
 public class CVSSCMTest {
     private static final String CVSROOT = ":pserver:anonymous:password@10.4.0.50:/var/cvsroot";
     private static final String MODULES = "module1 module2 module\\ name";
@@ -158,4 +176,51 @@ public class CVSSCMTest {
         assertFalse(descriptor.isCvsrootValid(cvsroot, matcher));
     }
 
+    /**
+     * Tests that SCM performs checkout after failed updating.
+     *
+     * @throws Exception if any.
+     */
+    @Test
+    public void testCheckoutIfUpdateFailed() throws Exception {
+        //Prepare data for testing.
+        CVSSCM scm = createPartialMock(CVSSCM.class,
+            new String[]{"isUpdatable", "update", "cleanCheckout", "archiveWorkspace", "calcChangeLog"},
+            CVSROOT, MODULES, BRANCH, null, true, false, false, null);
+        AbstractBuild build = createMock(AbstractBuild.class);
+        expect(build.getBuildVariables()).andReturn(new HashMap<String, String>());
+        expect(build.getTimestamp()).andReturn(Calendar.getInstance()).times(2);
+        expect(build.getActions()).andReturn(new ArrayList<Action>());
+        BuildListener listener = new StreamBuildListener(System.out, Charset.defaultCharset());
+        Launcher launcher = new Launcher.LocalLauncher(listener);
+        expect(scm.isUpdatable(EasyMock.<ModuleLocation>anyObject(), EasyMock.<FilePath>anyObject())).andReturn(null)
+            .once();
+        //Expect that updating failed.
+        expect(scm.update(EasyMock.<ModuleLocation>anyObject(), EasyMock.anyBoolean(), EasyMock.<Launcher>anyObject(),
+            EasyMock.<FilePath>anyObject(), EasyMock.<TaskListener>anyObject(), EasyMock.<Date>anyObject())).andReturn(
+            null).once();
+        //Expect that checkout performs if update fails.
+        expectPrivate(scm, "cleanCheckout", EasyMock.<ModuleLocation>anyObject(), EasyMock.<Launcher>anyObject(),
+            EasyMock.<FilePath>anyObject(), EasyMock.<TaskListener>anyObject(), EasyMock.<Date>anyObject()).andReturn(
+            true).once();
+        expectPrivate(scm, "archiveWorkspace", EasyMock.<AbstractBuild>anyObject(), EasyMock.<FilePath>anyObject());
+        expectPrivate(scm, "calcChangeLog", EasyMock.<AbstractBuild>anyObject(), EasyMock.<FilePath>anyObject(),
+            EasyMock.<List<String>>anyObject(), EasyMock.<File>anyObject(),
+            EasyMock.<BuildListener>anyObject()).andReturn(true);
+
+        replay(scm, build);
+        scm.checkout(build, launcher, null, listener, null);
+        verify(scm, build);
+    }
+
+    @Test
+    public void testCleanCheckout() throws Exception {
+        CVSSCM scm = new CVSSCM(CVSROOT, MODULES, BRANCH, null, true, false, false, null);
+        FilePath path = Mockito.mock(FilePath.class);
+        doReturn(path).when(path).child(".");
+        doThrow(new IOException()).when(path).deleteContents();
+        assertFalse(scm.cleanCheckout(scm.getModuleLocations()[0], null, path, null, null));
+        doThrow(new InterruptedException()).when(path).deleteContents();
+        assertFalse(scm.cleanCheckout(scm.getModuleLocations()[0], null, path, null, null));
+    }
 }
