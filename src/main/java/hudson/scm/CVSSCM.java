@@ -78,6 +78,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -312,7 +313,8 @@ public class CVSSCM extends SCM implements Serializable {
             if (canUseUpdate && isUpdatable(parametrizedLocation, ws) == null) {
                 changedFiles = update(parametrizedLocation, false, launcher, ws, listener,
                     build.getTimestamp().getTime());
-                if (changedFiles == null) {
+                if (changedFiles == null
+                    && !cleanCheckout(parametrizedLocation, launcher, ws, listener, build.getTimestamp().getTime())) {
                     return false;   // failed
                 }
             } else {
@@ -727,6 +729,37 @@ public class CVSSCM extends SCM implements Serializable {
                 return null;
             }
         });
+    }
+
+    /**
+     * Performs cleaning workspace before checkout.
+     *
+     * @param moduleLocation ModuleLocation.
+     * @param launcher Launcher.
+     * @param dir workspace directory.
+     * @param listener Listener.
+     * @param buildDate date of the build than will be used for checkout operation with -D flag
+     * @return true if checkout successful and false otherwise,
+     *
+     * @throws IOException if i/o errors.
+     * @throws InterruptedException if interrupted.
+     */
+    boolean cleanCheckout(ModuleLocation moduleLocation, Launcher launcher, FilePath dir, TaskListener listener,
+                             Date buildDate) throws InterruptedException, IOException {
+        FilePath path = flatten ? dir.getParent() : dir;
+        if (StringUtils.isNotEmpty(moduleLocation.getLocalDir())) {
+            path = path.child(moduleLocation.getLocalDir());
+        }
+        try {
+            path.deleteContents();
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Cannot perform cleaning.");
+            return false;
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.WARNING, "Operation was interrupted");
+            return false;
+        }
+        return checkout(moduleLocation, launcher, dir, listener, buildDate);
     }
 
     private boolean checkout(ModuleLocation moduleLocation, Launcher launcher, FilePath dir, TaskListener listener,
