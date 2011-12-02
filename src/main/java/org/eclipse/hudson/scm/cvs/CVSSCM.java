@@ -88,6 +88,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
@@ -1570,5 +1572,40 @@ public class CVSSCM extends SCM implements Serializable {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        CVSSCM that = (CVSSCM) o;
+
+        return new EqualsBuilder()
+            .append(canUseUpdate, that.canUseUpdate)
+            .append(flatten, that.flatten)
+            .append(preventLineEndingConversion, that.preventLineEndingConversion)
+            .append(cvsRsh, that.cvsRsh)
+            .append(excludedRegions, that.excludedRegions)
+            .append(moduleLocations, that.moduleLocations)
+            .append(repositoryBrowser, that.repositoryBrowser)
+            .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+            .append(canUseUpdate)
+            .append(flatten)
+            .append(preventLineEndingConversion)
+            .append(cvsRsh)
+            .append(excludedRegions)
+            .append(moduleLocations)
+            .append(repositoryBrowser)
+            .toHashCode();
     }
 }
