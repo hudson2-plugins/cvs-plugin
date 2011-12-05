@@ -20,7 +20,6 @@ import org.eclipse.hudson.scm.cvs.CVSChangeLogSet.CVSChangeLog;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.EditType;
 import hudson.scm.SCM;
-import hudson.util.Digester2;
 import hudson.util.IOException2;
 import java.io.IOException;
 import java.util.AbstractList;

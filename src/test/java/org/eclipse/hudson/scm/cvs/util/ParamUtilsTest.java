@@ -16,7 +16,6 @@ package org.eclipse.hudson.scm.cvs.util;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;

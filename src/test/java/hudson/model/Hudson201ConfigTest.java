@@ -12,9 +12,8 @@
  * Anton Kozak
  *
  *******************************************************************************/
-package org.eclipse.hudson.scm.cvs.config;
+package hudson.model;
 
-import hudson.model.FreeStyleProject;
 import org.eclipse.hudson.scm.cvs.CVSSCM;
 import org.junit.Test;
 
@@ -33,6 +32,9 @@ public class Hudson201ConfigTest extends BaseLegacyConverterTest {
     @Test
     public void testLegacyUnmarshall() throws Exception {
         FreeStyleProject project = (FreeStyleProject) getSourceConfigFile(XSTREAM).read();
+        project.setAllowSave(false);
+        project.initProjectProperties();
+        project.convertScmProperty();
         CVSSCM scm = (CVSSCM) project.getScm();
         assertNotNull(scm);
         assertEquals(scm.getModuleLocations().length, 1);

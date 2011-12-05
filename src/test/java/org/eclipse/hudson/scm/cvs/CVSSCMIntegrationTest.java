@@ -18,7 +18,6 @@ import hudson.model.FreeStyleProject;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Arrays;
-import org.eclipse.hudson.scm.cvs.CVSSCM;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonTestCase;

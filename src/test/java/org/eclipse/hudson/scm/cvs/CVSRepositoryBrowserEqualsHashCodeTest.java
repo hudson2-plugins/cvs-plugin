@@ -21,17 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.scm;
+package org.eclipse.hudson.scm.cvs;
 
-import hudson.scm.browsers.FishEyeCVS;
-import hudson.scm.browsers.ViewCVS;
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.eclipse.hudson.scm.cvs.browsers.FishEyeCVS;
+import org.eclipse.hudson.scm.cvs.browsers.ViewCVS;
 import org.junit.Before;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.*;
 
 /**
  * Verifies equals and hashcCode of CVSRepositoryBrowser objects.
