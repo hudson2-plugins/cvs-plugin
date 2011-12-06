@@ -9,7 +9,7 @@
  *
  * Contributors:
  *
- * Kohsuke Kawaguchi, Anton Kozak
+ * Kohsuke Kawaguchi, Anton Kozak, Nikita Levyankov
  *
  *******************************************************************************/
 package org.eclipse.hudson.scm.cvs;
