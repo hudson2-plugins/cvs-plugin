@@ -21,7 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.hudson.scm.cvs.CVSSCM;
+import org.eclipse.hudson.scm.cvs.PluginImpl;
 import org.junit.Before;
 
 public abstract class BaseLegacyConverterTest {
@@ -32,7 +32,7 @@ public abstract class BaseLegacyConverterTest {
     static {
         XSTREAM.alias("project",FreeStyleProject.class);
         XSTREAM.alias("matrix-project",MatrixProject.class);
-        CVSSCM.initialize();
+        PluginImpl.setXtreamAliasForBackwardCompatibility();
     }
 
     @Before

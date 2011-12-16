@@ -28,7 +28,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
-import hudson.model.Items;
 import hudson.model.JobProperty;
 import hudson.model.ModelObject;
 import hudson.model.ParameterDefinition;
@@ -165,10 +164,8 @@ public class CVSSCM extends SCM implements Serializable {
      * See http://www.nabble.com/Problem-with-polling-CVS%2C-from-version-1.181-tt15799926.html for the user report.
      */
     private static final Pattern PSERVER_CVSROOT_WITH_PASSWORD = Pattern.compile("(:pserver:[^@:]+):[^@:]+(@.+)");
-
-    private static final String HUDSON_SCM_CVSSCM_ALIAS_NAME = "hudson.scm.CVSSCM";
-    private static final String HUDSON_SCM_CVSSCM_DESCRIPTOR_ALIAS_NAME = HUDSON_SCM_CVSSCM_ALIAS_NAME
-        + "$DescriptorImpl";
+    
+    private static final String CVS_SCM_GLOBAL_CONFIG_FILE = "cvs-scm-global-config.xml";
 
     private String cvsRsh;
 
@@ -229,15 +226,6 @@ public class CVSSCM extends SCM implements Serializable {
             && moduleLocations.get(0).getNormalizedModules().length == 1;
         this.excludedRegions = excludedRegions;
         this.preventLineEndingConversion = preventLineEndingConversion;
-    }
-
-    /**
-     * Initializes aliases to save backward compatibility with old configuration.
-     */
-    public static void initialize() {
-        Items.XSTREAM.alias(HUDSON_SCM_CVSSCM_ALIAS_NAME, CVSSCM.class);
-        XmlFile.DEFAULT_XSTREAM.alias(HUDSON_SCM_CVSSCM_DESCRIPTOR_ALIAS_NAME, DescriptorImpl.class);
-        Items.XSTREAM.alias("hudson.scm.ModuleLocationImpl", ModuleLocationImpl.class);
     }
 
     @Override
@@ -1220,20 +1208,9 @@ public class CVSSCM extends SCM implements Serializable {
         }
 
         public DescriptorImpl() {
-            super(CVSRepositoryBrowser.class);
-            load();
+            this(true);
         }
 
-        /**
-         * Returns descriptor id.
-         * We return old class name to save backward compatibility of global configuration.
-         *
-         * @return descriptor id.
-         */
-        @Override
-        public String getId() {
-            return HUDSON_SCM_CVSSCM_ALIAS_NAME;
-        }
 
         /**
          * For the tests only
@@ -1248,6 +1225,21 @@ public class CVSSCM extends SCM implements Serializable {
         public String getDisplayName() {
             return "CVS";
         }
+        
+        @Override
+        public XmlFile getConfigFile() {
+            File hudsonRoot = Hudson.getInstance().getRootDir();
+            File globalConfigFile = new File(hudsonRoot, CVS_SCM_GLOBAL_CONFIG_FILE);
+            
+            // For backward Compatibility
+            File oldGlobalConfigFile = new File(hudsonRoot, "hudson.scm.CVSSCM.xml");
+            if (oldGlobalConfigFile.exists()){
+                oldGlobalConfigFile.renameTo(globalConfigFile);
+            }
+            
+            return new XmlFile(globalConfigFile);
+        }
+
 
         @Override
         public SCM newInstance(StaplerRequest req, JSONObject formData) throws FormException {
