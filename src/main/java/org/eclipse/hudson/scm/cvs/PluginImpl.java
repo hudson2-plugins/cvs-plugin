@@ -14,11 +14,14 @@
  *******************************************************************************/
 package org.eclipse.hudson.scm.cvs;
 
+import hudson.model.Run;
 import org.eclipse.hudson.scm.cvs.CVSSCM.DescriptorImpl;
 import hudson.Plugin;
 import hudson.XmlFile;
 import hudson.model.Items;
 import java.io.IOException;
+import org.eclipse.hudson.scm.cvs.browsers.FishEyeCVS;
+import org.eclipse.hudson.scm.cvs.browsers.ViewCVS;
 
 /**
  * Plugin entry point.
@@ -38,6 +41,14 @@ public class PluginImpl extends Plugin {
     public static void setXtreamAliasForBackwardCompatibility(){
         Items.XSTREAM.alias("hudson.scm.CVSSCM", CVSSCM.class);
         Items.XSTREAM.alias("hudson.scm.ModuleLocationImpl", ModuleLocationImpl.class);
+        Items.XSTREAM.alias("hudson.scm.browsers.ViewCVS", ViewCVS.class);
+        Items.XSTREAM.alias("hudson.scm.browsers.FishEyeCVS", FishEyeCVS.class);
+
+        Run.XSTREAM.alias("hudson.scm.CVSSCM$TagAction", CVSSCM.TagAction.class);
+        Run.XSTREAM.alias("hudson.scm.CVSChangeLogParser", CVSChangeLogParser.class);
+        Run.XSTREAM.alias("hudson.scm.ModuleLocationImpl", ModuleLocationImpl.class);
+        Run.XSTREAM.alias("hudson.scm.browsers.ViewCVS", ViewCVS.class);
+        Run.XSTREAM.alias("hudson.scm.browsers.FishEyeCVS", FishEyeCVS.class);
 
         XmlFile.DEFAULT_XSTREAM.alias("hudson.scm.CVSSCM$DescriptorImpl", DescriptorImpl.class);
     }
