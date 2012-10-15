@@ -70,5 +70,8 @@ THE SOFTWARE.
     <f:entry title="${%Prevent Line Ending Conversion}" field="preventLineEndingConversion">
       <f:checkbox default="false" />
     </f:entry>
+    <f:entry title="${%Skip Change Log}" field="skipChangeLog">
+      <f:checkbox default="false" />
+    </f:entry>
   </f:advanced>
 </j:jelly>
