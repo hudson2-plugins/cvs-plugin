@@ -139,6 +139,8 @@ public class CVSSCM extends SCM implements Serializable {
     /**
      * True to avoid computing the changelog. Useful with ancient versions of CVS that doesn't support
      * the -d option in the log command. See #1346.
+     * 
+     * Keep static for legacy instances, however will be removed in later versions.
      */
     public static boolean skipChangeLog = Boolean.getBoolean(CVSSCM.class.getName() + ".skipChangeLog");
 
@@ -212,12 +214,12 @@ public class CVSSCM extends SCM implements Serializable {
     public CVSSCM(String cvsRoot, String allModules, String branch, String cvsRsh, boolean canUseUpdate, boolean legacy,
                   boolean isTag, String excludedRegions) {
         this(Arrays.asList(new ModuleLocationImpl(cvsRoot, allModules, branch, isTag, null)),
-            cvsRsh, canUseUpdate, legacy, excludedRegions, false);
+            cvsRsh, canUseUpdate, legacy, excludedRegions, false, Boolean.getBoolean(CVSSCM.class.getName() + ".skipChangeLog"));
     }
 
     @DataBoundConstructor
     public CVSSCM(List<ModuleLocationImpl> moduleLocations, String cvsRsh, boolean canUseUpdate, boolean legacy,
-                  String excludedRegions, boolean preventLineEndingConversion) {
+                  String excludedRegions, boolean preventLineEndingConversion, boolean skipChangeLog) {
         moduleLocations = removeInvalidEntries(moduleLocations);
         this.moduleLocations = moduleLocations.toArray(new ModuleLocation[moduleLocations.size()]);
         this.cvsRsh = nullify(cvsRsh);
@@ -226,6 +228,7 @@ public class CVSSCM extends SCM implements Serializable {
             && moduleLocations.get(0).getNormalizedModules().length == 1;
         this.excludedRegions = excludedRegions;
         this.preventLineEndingConversion = preventLineEndingConversion;
+        this.skipChangeLog = skipChangeLog;
     }
 
     @Override
@@ -301,6 +304,11 @@ public class CVSSCM extends SCM implements Serializable {
     @Exported
     public boolean isPreventLineEndingConversion() {
         return preventLineEndingConversion;
+    }
+    
+    @Exported
+    public boolean isSkipChangeLog() {
+    	return skipChangeLog;
     }
 
     public boolean checkout(AbstractBuild build, Launcher launcher, FilePath ws, BuildListener listener,
