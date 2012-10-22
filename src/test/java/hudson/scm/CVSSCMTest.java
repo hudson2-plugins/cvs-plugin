@@ -70,7 +70,7 @@ public class CVSSCMTest {
     public void testGetModuleLocations() {
         CVSSCM scm = new CVSSCM(Arrays.asList(
             new ModuleLocationImpl(CVSROOT, MODULES, BRANCH, false, LOCAL_DIR)),
-            null, true, false, null, false);
+            null, true, false, null, false, false);
         //there are 3 modules
         assertFalse(scm.isFlatten());
         assertTrue(scm.isLegacy());

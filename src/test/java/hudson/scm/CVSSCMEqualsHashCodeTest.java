@@ -52,7 +52,7 @@ public class CVSSCMEqualsHashCodeTest {
     public void setUp() {
         List<ModuleLocationImpl> locations = new ArrayList<ModuleLocationImpl>();
         locations.add(new ModuleLocationImpl("cvsroot", "module", "branch", false, "subdir"));
-        defaultCvsscm = new CVSSCM(locations, "cvsRsh", true, false, "regions", true);
+        defaultCvsscm = new CVSSCM(locations, "cvsRsh", true, false, "regions", true, false);
     }
 
     public CVSSCMEqualsHashCodeTest(CVSSCM cvsscm, boolean expectedResult) {
@@ -68,15 +68,15 @@ public class CVSSCMEqualsHashCodeTest {
         locations1.add(new ModuleLocationImpl("cvsroot", "module2", "branch", false, "subdir"));
 
         return Arrays.asList(new Object[][] {
-            {new CVSSCM(locations, "cvsRsh", true, false, "regions", true), true},
-            {new CVSSCM(locations1, "cvsRsh", true, false, "regions", true), false},
-            {new CVSSCM(locations, "cvsRsh1", true, false, "regions", true), false},
-            {new CVSSCM(locations, null, true, false, "regions", true), false},
-            {new CVSSCM(locations, "cvsRsh", false, false, "regions", true), false},
-            {new CVSSCM(locations, "cvsRsh", true, true, "regions", true), false},
-            {new CVSSCM(locations, "cvsRsh", true, false, "regions1", true), false},
-            {new CVSSCM(locations, "cvsRsh", true, false, null, true), false},
-            {new CVSSCM(locations, "cvsRsh", true, false, "regions", false), false},
+            {new CVSSCM(locations, "cvsRsh", true, false, "regions", true, false), true},
+            {new CVSSCM(locations1, "cvsRsh", true, false, "regions", true, false), false},
+            {new CVSSCM(locations, "cvsRsh1", true, false, "regions", true, false), false},
+            {new CVSSCM(locations, null, true, false, "regions", true, false), false},
+            {new CVSSCM(locations, "cvsRsh", false, false, "regions", true, false), false},
+            {new CVSSCM(locations, "cvsRsh", true, true, "regions", true, false), false},
+            {new CVSSCM(locations, "cvsRsh", true, false, "regions1", true, false), false},
+            {new CVSSCM(locations, "cvsRsh", true, false, null, true, false), false},
+            {new CVSSCM(locations, "cvsRsh", true, false, "regions", false, false), false},
         });
     }
 
